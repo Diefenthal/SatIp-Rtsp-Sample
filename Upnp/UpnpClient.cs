@@ -151,21 +151,32 @@ namespace SatIp.RtspSample.Upnp
             {
                 socket.SetSocketOption(SocketOptionLevel.Socket,SocketOptionName.Broadcast,1);
                 socket.SetSocketOption(SocketOptionLevel.Socket,SocketOptionName.IpTimeToLive,2);
-                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()),new IPEndPoint(IPAddress.Broadcast,1900));
-
+                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(IPAddress.Broadcast, 1900));
+                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(IPAddress.Broadcast, 1900));
+                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(IPAddress.Broadcast, 1900));
                 var deviceLocations = new List<string>();    
                 var buffer          = new byte[32000];
                 var startTime       = DateTime.Now;
-                while(startTime.AddMilliseconds(timeout) > DateTime.Now)
+                var endTime = startTime.AddMilliseconds(timeout);
+                while (endTime > DateTime.Now)
                 {
-                    if(socket.Poll(1,SelectMode.SelectRead)){
+                    if (socket.Poll(1, SelectMode.SelectRead))
+                    {
                         var countReceived = socket.Receive(buffer);
-                        var responseLines = Encoding.UTF8.GetString(buffer,0,countReceived).Split('\n');
-                        deviceLocations.AddRange(from responseLine in responseLines select responseLine.Split(new[] {':'}, 2) into nameValue where string.Equals(nameValue[0], "location", StringComparison.InvariantCultureIgnoreCase) select nameValue[1].Trim());
+                        var responseLines = Encoding.UTF8.GetString(buffer, 0, countReceived).Split('\n');
+                        foreach (var responseLine in responseLines)
+                        {
+                            string[] locationHeader = responseLine.Split(new char[] {':'}, 2);
+                            if ((string.Equals(locationHeader[0], "location", StringComparison.InvariantCultureIgnoreCase)) &&
+                                (!deviceLocations.Contains(locationHeader[1].Trim())))
+                            {
+                                deviceLocations.Add(locationHeader[1].Trim());
+                            }
+                        }
                     }
                 }
                 var devices = new List<UpnpDevice>();
-                foreach(var location in deviceLocations)
+                foreach (var location in deviceLocations)
                 {
                     try
                     {
@@ -209,8 +220,9 @@ namespace SatIp.RtspSample.Upnp
                 socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()),new IPEndPoint(ip,1900));
                 var deviceLocations = new List<string>();    
                 var buffer          = new byte[32000];
-                var startTime       = DateTime.Now;
-                while(startTime.AddMilliseconds(timeout) > DateTime.Now)
+                var startTime = DateTime.Now;
+                var endTime = startTime.AddMilliseconds(timeout);
+                while (endTime > DateTime.Now)
                 {
                     if(socket.Poll(1,SelectMode.SelectRead))
                     {

@@ -73,7 +73,7 @@ namespace SatIp.RtspSample
             _name = name;
             foreach (var parameter in parameters)
             {
-                if (parameter.Substring(0).Contains("?src="))
+                if (parameter.Substring(0).Contains("src="))
                 {
                     var sourceline = parameter.Split('=');
                     _source = sourceline[1];

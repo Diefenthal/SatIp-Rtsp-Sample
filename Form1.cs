@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using SatIp.RtspSample.Logging;
 using SatIp.RtspSample.Properties;
@@ -30,15 +31,12 @@ namespace SatIp.RtspSample
         private UpnpClient _upnpClient;
         private RtspDevice _rtspDevice;
         private Boolean _isstreaming;
-        private readonly Timer _keepaLiveTimer;
+        private Timer _keepaLiveTimer;
 
         public Form1()
         {
             InitializeComponent();
             Logger.SetLogFilePath("Sample.log", Settings.Default.LogLevel);
-            
-            _keepaLiveTimer = new Timer { Interval = 59000, Enabled = true };
-            _keepaLiveTimer.Tick += _keepaLiveTimer_Tick;
             var source = GetStationsFromLocalFile_m3u(Application.StartupPath + @"\PlayList.m3u");
             using (var enumerator = source.GetEnumerator())
             {
@@ -46,7 +44,9 @@ namespace SatIp.RtspSample
                 {
                     PlayList.DataSource = source;
                 }
-            }             
+            }
+            tspgrLevel.Maximum = tspgrLevel.Maximum;
+            tspgrQuality.Maximum = tspgrQuality.Maximum;
         }
 
         void _keepaLiveTimer_Tick(object sender, EventArgs e)
@@ -54,6 +54,11 @@ namespace SatIp.RtspSample
             try 
             { 
                 _rtspDevice.RtspSession.Options();
+                int level;
+                int quality;
+                _rtspDevice.RtspSession.Describe(out level, out quality);
+                tspgrLevel.Value = level;
+                tspgrQuality.Value = quality;
             }
             catch (Exception exception)
             {
@@ -64,16 +69,33 @@ namespace SatIp.RtspSample
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            _upnpClient = new UpnpClient();
-            Logger.Info("Lookup for Sat>IpServer");
-            var devices =_upnpClient.Search(500);
-             Logger.Info("Lookup for Sat>Ip Server is Completed");
-            foreach (var device in devices)
+            var devices = new List<UpnpDevice>();
+            if(Settings.Default.UseAutoDiscovery)
             {
-                listBox1.Items.Add(device);
+                _upnpClient = new UpnpClient();
+                Logger.Info("Lookup for Sat>IpServer");
+                devices =_upnpClient.Search(Settings.Default.Timeout).ToList();
+                Logger.Info("Lookup for Sat>Ip Server is Completed");
             }
-            _keepaLiveTimer.Enabled = true;
-            listBox1.SelectedIndex = 0;
+            else
+            {
+                var dlg = new Form2();
+                if (DialogResult.OK == dlg.ShowDialog())
+                {
+                }
+
+                //Todo Create a Form where we can create an Dummy Device
+            }
+
+            if (devices.Count > -1)
+            {
+                foreach (var device in devices)
+                {
+                    listBox1.Items.Add(device);
+                }
+                listBox1.SelectedIndex = 0;
+            }
+           
         }
 
         private void PlayList_SelectedIndexChanged(object sender, EventArgs e)
@@ -84,30 +106,20 @@ namespace SatIp.RtspSample
                 Logger.Info(string.Format("{0}{1}{2}", "Channel ",service.Name , " is selected"));
                 if (_rtspDevice != null) 
                 {
-                    int level;
-                    int quality;
-                    if (!_isstreaming)
-                    {
-                        _keepaLiveTimer.Stop();
-                        _rtspDevice.RtspSession.Setup(service.ToString(),"unicast");
-                        _rtspDevice.RtspSession.Play(String.Empty);
-                        _rtspDevice.RtspSession.Describe(out level,  out quality);
-                        _isstreaming = true;
-                        _keepaLiveTimer.Start();
-                    }
-                    else
-                    {
+                    //if (!_isstreaming)
+                    //{
+                    //    _keepaLiveTimer.Stop();
+                    //    _rtspDevice.RtspSession.Setup(service.ToString(), "unicast");
+                    //    _rtspDevice.RtspSession.Play(String.Empty);
+                    //    _isstreaming = true;
+                    //    _keepaLiveTimer.Start();
+                    //}
+                    //else
+                    //{
                         _keepaLiveTimer.Stop();
                         _rtspDevice.RtspSession.Play(service.ToString());
-                        _rtspDevice.RtspSession.Describe(out level, out quality);
                         _keepaLiveTimer.Start();
-                    }
-                   
-                    tspgrLevel.Maximum = tspgrLevel.Maximum;
-                    tspgrLevel.Value = level;
-                    
-                    tspgrQuality.Maximum = tspgrQuality.Maximum;
-                    tspgrQuality.Value = quality;                    
+                    //}
                     axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination, _rtspDevice.RtspSession.ClientRtpPort);
                 }
             }
@@ -166,12 +178,15 @@ namespace SatIp.RtspSample
             var device = (UpnpDevice)listBox1.SelectedItem;
             if (device != null)
             {
+                _keepaLiveTimer = new Timer {Enabled = true };
+                _keepaLiveTimer.Tick += _keepaLiveTimer_Tick;
                 Logger.Info(string.Format("{0}{1}{2}", "Sat>Ip Server ", device.FriendlyName, " is selected"));
-                if ((_rtspDevice != null) && (!_rtspDevice.RtspDeviceName.Equals(device.FriendlyName)))
+                if ((_rtspDevice != null) &&(!_rtspDevice.RtspDeviceName.Equals(device.FriendlyName)))
                 {
                     _keepaLiveTimer.Stop();
                     _rtspDevice.Dispose();
                     _rtspDevice = new RtspDevice(device);
+                    _keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
                     _keepaLiveTimer.Start();
                     _isstreaming = false;
                 }
@@ -179,6 +194,7 @@ namespace SatIp.RtspSample
                 {
                     _keepaLiveTimer.Stop();
                     _rtspDevice = new RtspDevice(device);
+                    _keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
                     _keepaLiveTimer.Start();
                 }
                 var service = (Service)PlayList.SelectedItem;
@@ -186,19 +202,12 @@ namespace SatIp.RtspSample
                 if (!_isstreaming)
                 {
                     
-                    _rtspDevice.RtspSession.Setup(service.ToString(),"unicast");                        
+                    _rtspDevice.RtspSession.Setup(service.ToString(), "unicast");
                     _rtspDevice.RtspSession.Play(String.Empty);
-                    int quality;
-                    int level;
-                    _rtspDevice.RtspSession.Describe(out level, out quality);                        
                     _isstreaming = true;
+                    axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination,
+                        _rtspDevice.RtspSession.ClientRtpPort);
                     
-                    tspgrLevel.Maximum = tspgrLevel.Maximum;
-                    tspgrLevel.Value = level;
-                    
-                    tspgrQuality.Maximum = tspgrQuality.Maximum;
-                    tspgrQuality.Value = quality;
-                    axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination, _rtspDevice.RtspSession.ClientRtpPort);
                 }
             }
         }

@@ -55,12 +55,22 @@
     <Compile Include="Form1.designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Form2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form2.Designer.cs">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Logging\LogDurationScope.cs" />
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form2.resx">
+      <DependentUpon>Form2.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -83,6 +93,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Rtsp\RtspClient.cs" />
     <Compile Include="Rtsp\RtspDevice.cs" />
     <Compile Include="Rtsp\RtspMethod.cs" />
     <Compile Include="Rtsp\RtspRequest.cs" />
@@ -95,6 +106,9 @@
     <Compile Include="Upnp\UpnpIcon.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ASTRA19_2E rtsp.m3u">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="log4net.dll" />
     <Content Include="PlayList.m3u">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            this.PlayList = new System.Windows.Forms.ListBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.listBox1 = new System.Windows.Forms.ListBox();
@@ -39,6 +38,7 @@
             this.tsslblQuality = new System.Windows.Forms.ToolStripStatusLabel();
             this.tspgrQuality = new System.Windows.Forms.ToolStripProgressBar();
             this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
+            this.PlayList = new System.Windows.Forms.ListBox();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -48,18 +48,6 @@
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.axWindowsMediaPlayer1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // PlayList
-            // 
-            this.PlayList.DisplayMember = "Name";
-            this.PlayList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.PlayList.FormattingEnabled = true;
-            this.PlayList.Location = new System.Drawing.Point(0, 0);
-            this.PlayList.Margin = new System.Windows.Forms.Padding(0);
-            this.PlayList.Name = "PlayList";
-            this.PlayList.Size = new System.Drawing.Size(351, 264);
-            this.PlayList.TabIndex = 5;
-            this.PlayList.SelectedIndexChanged += new System.EventHandler(this.PlayList_SelectedIndexChanged);
             // 
             // splitContainer1
             // 
@@ -74,8 +62,8 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.axWindowsMediaPlayer1);
-            this.splitContainer1.Size = new System.Drawing.Size(1055, 341);
-            this.splitContainer1.SplitterDistance = 351;
+            this.splitContainer1.Size = new System.Drawing.Size(1122, 562);
+            this.splitContainer1.SplitterDistance = 373;
             this.splitContainer1.TabIndex = 6;
             // 
             // splitContainer2
@@ -92,10 +80,10 @@
             // 
             // splitContainer2.Panel2
             // 
-            this.splitContainer2.Panel2.Controls.Add(this.statusStrip1);
             this.splitContainer2.Panel2.Controls.Add(this.PlayList);
-            this.splitContainer2.Size = new System.Drawing.Size(351, 341);
-            this.splitContainer2.SplitterDistance = 62;
+            this.splitContainer2.Panel2.Controls.Add(this.statusStrip1);
+            this.splitContainer2.Size = new System.Drawing.Size(373, 562);
+            this.splitContainer2.SplitterDistance = 102;
             this.splitContainer2.TabIndex = 0;
             // 
             // listBox1
@@ -104,8 +92,9 @@
             this.listBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listBox1.FormattingEnabled = true;
             this.listBox1.Location = new System.Drawing.Point(0, 0);
+            this.listBox1.Margin = new System.Windows.Forms.Padding(3, 3, 3, 60);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(351, 56);
+            this.listBox1.Size = new System.Drawing.Size(373, 95);
             this.listBox1.TabIndex = 0;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
@@ -116,9 +105,9 @@
             this.tspgrLevel,
             this.tsslblQuality,
             this.tspgrQuality});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 253);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 434);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(351, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(373, 22);
             this.statusStrip1.TabIndex = 6;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -151,14 +140,26 @@
             this.axWindowsMediaPlayer1.Location = new System.Drawing.Point(0, 0);
             this.axWindowsMediaPlayer1.Name = "axWindowsMediaPlayer1";
             this.axWindowsMediaPlayer1.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axWindowsMediaPlayer1.OcxState")));
-            this.axWindowsMediaPlayer1.Size = new System.Drawing.Size(700, 341);
+            this.axWindowsMediaPlayer1.Size = new System.Drawing.Size(745, 562);
             this.axWindowsMediaPlayer1.TabIndex = 0;
+            // 
+            // PlayList
+            // 
+            this.PlayList.DisplayMember = "Name";
+            this.PlayList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.PlayList.FormattingEnabled = true;
+            this.PlayList.Location = new System.Drawing.Point(0, 0);
+            this.PlayList.Margin = new System.Windows.Forms.Padding(0, 30, 0, 0);
+            this.PlayList.Name = "PlayList";
+            this.PlayList.Size = new System.Drawing.Size(373, 433);
+            this.PlayList.TabIndex = 8;
+            this.PlayList.SelectedIndexChanged += new System.EventHandler(this.PlayList_SelectedIndexChanged);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1055, 341);
+            this.ClientSize = new System.Drawing.Size(1122, 562);
             this.Controls.Add(this.splitContainer1);
             this.Name = "Form1";
             this.ShowIcon = false;
@@ -182,16 +183,16 @@
         #endregion
 
         //private AxWMPLib.AxWindowsMediaPlayer axWindowsMediaPlayer1;
-        private System.Windows.Forms.ListBox PlayList;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripProgressBar tspgrLevel;
         private System.Windows.Forms.ToolStripProgressBar tspgrQuality;
         private System.Windows.Forms.ToolStripStatusLabel tsslblQuality;
-        private System.Windows.Forms.ToolStripStatusLabel tsslblLevel;
         private System.Windows.Forms.ListBox listBox1;
         private AxWMPLib.AxWindowsMediaPlayer axWindowsMediaPlayer1;
+        private System.Windows.Forms.ToolStripStatusLabel tsslblLevel;
+        private System.Windows.Forms.ListBox PlayList;
     }
 }
 

@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SatIp.RtspSample.Rtsp
@@ -122,7 +123,7 @@ namespace SatIp.RtspSample.Rtsp
         public static RtspResponse Deserialise(byte[] responseBytes, int responseByteCount)
         {
             var response = new RtspResponse();
-            var responseString = System.Text.Encoding.UTF8.GetString(responseBytes, 0, responseByteCount);
+            var responseString = Encoding.UTF8.GetString(responseBytes, 0, responseByteCount);
             var m = RegexStatusLine.Match(responseString);
             if (m.Success)
             {
@@ -143,5 +144,23 @@ namespace SatIp.RtspSample.Rtsp
             }
             return response;
         }
+
+        public string ToString
+        {
+            get
+            {
+                var request = new StringBuilder();
+                foreach (var header in _headers)
+                {
+                    request.AppendFormat("{0}: {1}\r\n", header.Key, header.Value);
+                }
+                request.AppendFormat("\r\n{0}", _body);
+                return request.ToString();
+            }
+        }
+        //protected override
+        //{
+        //    
+        //}
     }
 }

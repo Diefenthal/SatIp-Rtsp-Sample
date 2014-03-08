@@ -77,8 +77,6 @@ namespace SatIp.RtspSample.Rtsp
             set{if (_rtspSession != value){_rtspSession = value; OnPropertyChanged("RtspSession"); } }
         }
 
-       
-
         #endregion
 
         #region Public Events

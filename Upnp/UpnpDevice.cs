@@ -58,10 +58,25 @@ namespace SatIp.RtspSample.Upnp
 
         #region method Init
 
-        public string GetImage(int index)
+        public string GetImage(string mimetype,int width,int height,int depth)
         {
-            var icon=(UpnpIcon)_iconList.GetValue(index);
-            return  icon.Url;
+            UpnpIcon result= null;
+            foreach (UpnpIcon icon in _iconList)
+            {
+                if ((icon.MimeType.Equals(mimetype)) && (icon.Width.Equals(width)) && (icon.Height.Equals(height)) &&
+                    (icon.Depth.Equals(depth)))
+                {
+                    result = icon;
+                }
+            }
+            if(result.Url.StartsWith("HTTP://"))
+            {
+                return result.Url;
+            }
+            else
+            {
+                return string.Format("http://{0}:{1}{2}", _baseHost, _basePort, result.Url);
+            }
         }
 
         private void Init(string url)
@@ -128,8 +143,12 @@ namespace SatIp.RtspSample.Upnp
 
                         _iconList = icons.ToArray();
                     }
-                    _presentationUrl = deviceElement.Element(n0 + "presentationURL").Value;
-                    _frontends= deviceElement.Element(n1 +"X_SATIPCAP").Value;
+                    var presentationurlElement  = deviceElement.Element(n0 + "presentationURL");
+                    if (presentationurlElement != null)
+                    	_presentationUrl = presentationurlElement.Value;
+                    var satipcapElement = deviceElement.Element(n1 + "X_SATIPCAP");
+                    if (satipcapElement != null)
+                    	_frontends = satipcapElement.Value;
                 }
             }
         }
@@ -152,6 +171,7 @@ namespace SatIp.RtspSample.Upnp
         public string FriendlyName
         {
             get{ return _friendlyName; }
+            set { _friendlyName = value; }
         }
 
         /// <summary>
