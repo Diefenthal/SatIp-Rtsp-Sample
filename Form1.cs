@@ -69,25 +69,12 @@ namespace SatIp.RtspSample
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            var devices = new List<UpnpDevice>();
-            if(Settings.Default.UseAutoDiscovery)
-            {
-                _upnpClient = new UpnpClient();
-                Logger.Info("Lookup for Sat>IpServer");
-                devices =_upnpClient.Search(Settings.Default.Timeout).ToList();
-                Logger.Info("Lookup for Sat>Ip Server is Completed");
-            }
-            else
-            {
-                var dlg = new Form2();
-                if (DialogResult.OK == dlg.ShowDialog())
-                {
-                }
+            _upnpClient = new UpnpClient();
+            Logger.Info("Lookup for Sat>IpServer");
+            var devices = _upnpClient.Search(Settings.Default.Timeout);
+            Logger.Info("Lookup for Sat>Ip Server is Completed");
 
-                //Todo Create a Form where we can create an Dummy Device
-            }
-
-            if (devices.Count > -1)
+            if (devices.Length > -1)
             {
                 foreach (var device in devices)
                 {
@@ -95,7 +82,6 @@ namespace SatIp.RtspSample
                 }
                 listBox1.SelectedIndex = 0;
             }
-           
         }
 
         private void PlayList_SelectedIndexChanged(object sender, EventArgs e)
@@ -106,20 +92,9 @@ namespace SatIp.RtspSample
                 Logger.Info(string.Format("{0}{1}{2}", "Channel ",service.Name , " is selected"));
                 if (_rtspDevice != null) 
                 {
-                    //if (!_isstreaming)
-                    //{
-                    //    _keepaLiveTimer.Stop();
-                    //    _rtspDevice.RtspSession.Setup(service.ToString(), "unicast");
-                    //    _rtspDevice.RtspSession.Play(String.Empty);
-                    //    _isstreaming = true;
-                    //    _keepaLiveTimer.Start();
-                    //}
-                    //else
-                    //{
-                        _keepaLiveTimer.Stop();
-                        _rtspDevice.RtspSession.Play(service.ToString());
-                        _keepaLiveTimer.Start();
-                    //}
+                    _keepaLiveTimer.Stop();
+                    _rtspDevice.RtspSession.Play(service.ToString());
+                    _keepaLiveTimer.Start();
                     axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination, _rtspDevice.RtspSession.ClientRtpPort);
                 }
             }
@@ -201,7 +176,6 @@ namespace SatIp.RtspSample
                 Logger.Info(string.Format("{0}{1}{2}", "Channel ", service.Name, " is selected"));
                 if (!_isstreaming)
                 {
-                    
                     _rtspDevice.RtspSession.Setup(service.ToString(), "unicast");
                     _rtspDevice.RtspSession.Play(String.Empty);
                     _isstreaming = true;
