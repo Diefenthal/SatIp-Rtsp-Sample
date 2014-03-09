@@ -46,17 +46,5 @@ namespace SatIp.RtspSample.Properties {
                 this["Timeout"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseAutoDiscovery {
-            get {
-                return ((bool)(this["UseAutoDiscovery"]));
-            }
-            set {
-                this["UseAutoDiscovery"] = value;
-            }
-        }
     }
 }

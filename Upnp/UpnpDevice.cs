@@ -20,27 +20,13 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
+using SatIp.RtspSample.Rtsp;
 
 namespace SatIp.RtspSample.Upnp
 {
     public class UpnpDevice
     {
-        private string _baseHost = "";
-        private string _deviceType = "";
-        private string _friendlyName = "";
-        private string _manufacturer = "";
-        private string _manufacturerUrl = "";
-        private string _modelDescription = "";
-        private string _modelName = "";
-        private string _modelNumber = "";
-        private string _modelUrl = "";
-        private string _serialNumber = "";
-        private string _uDN = "";
-        private string _presentationUrl = "";
-        private string _deviceDescription;
         private UpnpIcon[] _iconList = new UpnpIcon[4];
-        private string _frontends = "";
-        private string _basePort;
 
         /// <summary>
         /// Default constructor.
@@ -48,6 +34,19 @@ namespace SatIp.RtspSample.Upnp
         /// <param name="url">Device URL.</param>
         internal UpnpDevice(string url)
         {
+            Frontends = "";
+            BaseHost = "";
+            PresentationUrl = "";
+            Udn = "";
+            SerialNumber = "";
+            ModelUrl = "";
+            ModelNumber = "";
+            ModelName = "";
+            ModelDescription = "";
+            ManufacturerUrl = "";
+            Manufacturer = "";
+            FriendlyName = "";
+            DeviceType = "";
             if (url == null)
             {
                 throw new ArgumentNullException("url");
@@ -75,7 +74,7 @@ namespace SatIp.RtspSample.Upnp
             }
             else
             {
-                return string.Format("http://{0}:{1}{2}", _baseHost, _basePort, result.Url);
+                return string.Format("http://{0}:{1}{2}", BaseHost, BasePort, result.Url);
             }
         }
 
@@ -95,38 +94,38 @@ namespace SatIp.RtspSample.Upnp
                 BaseHost = address[0];
                 var port = address[1].Split('/');
                 BasePort = port[0];
-                _deviceDescription = document.Declaration+document.ToString();
+                DeviceDescription = document.Declaration+document.ToString();
                 if (deviceElement != null)
                 {
                     var devicetypeElement = deviceElement.Element(n0+"deviceType");
                     if (devicetypeElement != null)
-                        _deviceType = devicetypeElement.Value;
+                        DeviceType = devicetypeElement.Value;
                     var friendlynameElement = deviceElement.Element(n0+"friendlyName");
                     if (friendlynameElement != null)
-                        _friendlyName = friendlynameElement.Value;
+                        FriendlyName = friendlynameElement.Value;
                     var manufactureElement = deviceElement.Element(n0+"manufacturer");
                     if (manufactureElement != null)
-                        _manufacturer = manufactureElement.Value;
+                        Manufacturer = manufactureElement.Value;
                     var manufactureurlElement = deviceElement.Element(n0 + "manufacturerURL");
                     if (manufactureurlElement != null)
-                        _manufacturerUrl = manufactureurlElement.Value;
+                        ManufacturerUrl = manufactureurlElement.Value;
                     var modeldescriptionElement = deviceElement.Element(n0 + "modelDescription");
                     if (modeldescriptionElement != null)
-                        _modelDescription = modeldescriptionElement.Value;
+                        ModelDescription = modeldescriptionElement.Value;
                     var modelnameElement = deviceElement.Element(n0 + "modelName");
                     if (modelnameElement != null)
-                        _modelName = modelnameElement.Value;
+                        ModelName = modelnameElement.Value;
                     var modelnumberElement = deviceElement.Element(n0 + "modelNumber");
                     if (modelnumberElement != null)
-                        _modelNumber = modelnumberElement.Value;
+                        ModelNumber = modelnumberElement.Value;
                     var modelurlElement = deviceElement.Element(n0 + "modelURL");
                     if (modelurlElement != null)
-                        _modelUrl = modelurlElement.Value;
+                        ModelUrl = modelurlElement.Value;
                     var serialnumberElement = deviceElement.Element(n0 + "serialNumber");
                     if (serialnumberElement != null)
-                        _serialNumber = serialnumberElement.Value;
+                        SerialNumber = serialnumberElement.Value;
                     var uniquedevicenameElement = deviceElement.Element(n0 + "UDN");
-                    if (uniquedevicenameElement != null) _uDN = uniquedevicenameElement.Value;
+                    if (uniquedevicenameElement != null) Udn = uniquedevicenameElement.Value;
                     var iconList = deviceElement.Element(n0 + "iconList");
                     if (iconList != null)
                     {
@@ -145,10 +144,26 @@ namespace SatIp.RtspSample.Upnp
                     }
                     var presentationurlElement  = deviceElement.Element(n0 + "presentationURL");
                     if (presentationurlElement != null)
-                    	_presentationUrl = presentationurlElement.Value;
+                    	PresentationUrl = presentationurlElement.Value;
                     var satipcapElement = deviceElement.Element(n1 + "X_SATIPCAP");
                     if (satipcapElement != null)
-                    	_frontends = satipcapElement.Value;
+                    	Frontends = satipcapElement.Value;
+                    else
+                    {
+                        RtspResponse response;
+                        var client = new RtspClient(BaseHost);
+                        var request = new RtspRequest(RtspMethod.Describe, string.Format("rtsp://{0}:{1}/", BaseHost, 554), 1, 0);
+                        request.Headers.Add("Accept", "application/sdp");
+                        client.SendRequest(request, out response);
+                        if(response != null)
+                        {
+                            if (response.StatusCode == RtspStatusCode.Ok)
+                            {
+                                Match m = Regex.Match(response.Body, @"s=SatIPServer:1\s+([^\s]+)\s+", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+                                Frontends = m.Success ? m.Groups[1].Captures[0].Value : "";
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -156,87 +171,56 @@ namespace SatIp.RtspSample.Upnp
         #endregion
 
         #region Proeprties implementation
-        
+
         /// <summary>
         /// Gets device type.
         /// </summary>
-        public string DeviceType
-        {
-            get{ return _deviceType; }
-        }
+        public string DeviceType { get; private set; }
 
         /// <summary>
         /// Gets device short name.
         /// </summary>
-        public string FriendlyName
-        {
-            get{ return _friendlyName; }
-            set { _friendlyName = value; }
-        }
+        public string FriendlyName { get; set; }
 
         /// <summary>
         /// Gets manufacturer's name.
         /// </summary>
-        public string Manufacturer
-        {
-            get{ return _manufacturer; }
-        }
+        public string Manufacturer { get; private set; }
 
         /// <summary>
         /// Gets web site for Manufacturer.
         /// </summary>
-        public string ManufacturerUrl
-        {
-            get{ return _manufacturerUrl; }
-        }
+        public string ManufacturerUrl { get; private set; }
 
         /// <summary>
         /// Gets device long description.
         /// </summary>
-        public string ModelDescription
-        {
-            get{ return _modelDescription; }
-        }
+        public string ModelDescription { get; private set; }
 
         /// <summary>
         /// Gets model name.
         /// </summary>
-        public string ModelName
-        {
-            get{ return _modelName; }
-        }
+        public string ModelName { get; private set; }
 
         /// <summary>
         /// Gets model number.
         /// </summary>
-        public string ModelNumber
-        {
-            get{ return _modelNumber; }
-        }
+        public string ModelNumber { get; private set; }
 
         /// <summary>
         /// Gets web site for model.
         /// </summary>
-        public string ModelUrl
-        {
-            get{ return _modelUrl; }
-        }
+        public string ModelUrl { get; private set; }
 
         /// <summary>
         /// Gets serial number.
         /// </summary>
-        public string SerialNumber
-        {
-            get{ return _serialNumber; }
-        }
+        public string SerialNumber { get; private set; }
 
         /// <summary>
         /// Gets unique device name.
         /// </summary>
-        public string UDN
-        {
-            get{ return _uDN; }
-        }
+        public string Udn { get; private set; }
 
         // iconList
         // serviceList
@@ -245,42 +229,24 @@ namespace SatIp.RtspSample.Upnp
         /// <summary>
         /// Gets device UI url.
         /// </summary>
-        public string PresentationUrl
-        {
-            get{ return _presentationUrl; }
-        }
+        public string PresentationUrl { get; private set; }
 
         /// <summary>
         /// Gets UPnP device XML description.
         /// </summary>
-        public string DeviceDescription
-        {
-            get{ return _deviceDescription; }
-        }
+        public string DeviceDescription { get; private set; }
 
-        public string BaseHost
-        {
-            get { return _baseHost; }
-            set { _baseHost = value; }
-        }
+        public string BaseHost { get; set; }
 
-        public string BasePort
-        {
-            get { return _basePort; }
-            set { _basePort = value; }
-        }
+        public string BasePort { get; set; }
 
-        public string Frontends
-        {
-            get { return _frontends; }
-            set { _frontends = value; }
-        }
+        public string Frontends { get; set; }
 
         #endregion
 
         public string Name
         {
-            get { return string.Format("{0}  -  {1}", _friendlyName, _uDN); }
+            get { return string.Format("{0}  -  {1}", FriendlyName, Udn); }
         }
 
     }

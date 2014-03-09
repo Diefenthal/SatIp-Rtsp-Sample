@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -60,24 +59,25 @@ namespace SatIp.RtspSample.Upnp
 
             using(var socket = new Socket(AddressFamily.InterNetwork,SocketType.Dgram,ProtocolType.Udp))
             {
-                socket.SetSocketOption(SocketOptionLevel.Socket,SocketOptionName.Broadcast,1);
-                socket.SetSocketOption(SocketOptionLevel.Socket,SocketOptionName.IpTimeToLive,2);
-                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(IPAddress.Broadcast, 1900));
-                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(IPAddress.Broadcast, 1900));
-                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(IPAddress.Broadcast, 1900));
+                socket.Bind(new IPEndPoint(IPAddress.Any, 1901));
+                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), IPAddress.Any));
+                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900));
+                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900));
+                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1900));
                 var deviceLocations = new List<string>();    
                 var buffer          = new byte[32000];
                 var startTime       = DateTime.Now;
                 var endTime = startTime.AddMilliseconds(timeout);
                 while (endTime > DateTime.Now)
                 {
-                    if (socket.Poll(1, SelectMode.SelectRead))
+                    //if (socket.Poll(1, SelectMode.SelectRead))
+                    if(socket.Available > 1)
                     {
                         var countReceived = socket.Receive(buffer);
                         var responseLines = Encoding.UTF8.GetString(buffer, 0, countReceived).Split('\n');
                         foreach (var responseLine in responseLines)
                         {
-                            string[] locationHeader = responseLine.Split(new char[] {':'}, 2);
+                            string[] locationHeader = responseLine.Split(new[] {':'}, 2);
                             if ((string.Equals(locationHeader[0], "location", StringComparison.InvariantCultureIgnoreCase)) &&
                                 (!deviceLocations.Contains(locationHeader[1].Trim())))
                             {
@@ -121,14 +121,15 @@ namespace SatIp.RtspSample.Upnp
                 timeout = 1;
             }
             using(var socket = new Socket(AddressFamily.InterNetwork,SocketType.Dgram,ProtocolType.Udp)){
-                socket.SetSocketOption(SocketOptionLevel.Socket,SocketOptionName.IpTimeToLive,2);
+                socket.Bind(new IPEndPoint(IPAddress.Any, 1901));
+                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ip, IPAddress.Any));
                 var query = new StringBuilder();
                 query.Append("M-SEARCH * HTTP/1.1\r\n");
                 query.Append("MAN: \"ssdp:discover\"\r\n");
                 query.Append("MX: 2\r\n");
                 query.Append("ST: " + deviceType + "\r\n");
                 query.Append("\r\n");
-                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()),new IPEndPoint(ip,1900));
+                socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(ip, 1900));
                 socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(ip, 1900));
                 socket.SendTo(Encoding.UTF8.GetBytes(query.ToString()), new IPEndPoint(ip, 1900));
                 var deviceLocations = new List<string>();    
@@ -137,13 +138,13 @@ namespace SatIp.RtspSample.Upnp
                 var endTime = startTime.AddMilliseconds(timeout);
                 while (endTime > DateTime.Now)
                 {
-                    if(socket.Poll(1,SelectMode.SelectRead))
+                    if(socket.Available > 1)
                     {
                         var countReceived = socket.Receive(buffer);
                         var responseLines = Encoding.UTF8.GetString(buffer,0,countReceived).Split('\n');
                         foreach (var responseLine in responseLines)
                         {
-                            string[] locationHeader = responseLine.Split(new char[] { ':' }, 2);
+                            string[] locationHeader = responseLine.Split(new[] { ':' }, 2);
                             if ((string.Equals(locationHeader[0], "location", StringComparison.InvariantCultureIgnoreCase)) &&
                                 (!deviceLocations.Contains(locationHeader[1].Trim())))
                             {

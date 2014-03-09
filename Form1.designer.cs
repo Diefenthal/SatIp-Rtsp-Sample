@@ -28,17 +28,19 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.Device = new System.Windows.Forms.ListBox();
+            this.PlayList = new System.Windows.Forms.ListBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tsslblLevel = new System.Windows.Forms.ToolStripStatusLabel();
             this.tspgrLevel = new System.Windows.Forms.ToolStripProgressBar();
             this.tsslblQuality = new System.Windows.Forms.ToolStripStatusLabel();
             this.tspgrQuality = new System.Windows.Forms.ToolStripProgressBar();
             this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
-            this.PlayList = new System.Windows.Forms.ListBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -76,7 +78,7 @@
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.listBox1);
+            this.splitContainer2.Panel1.Controls.Add(this.Device);
             // 
             // splitContainer2.Panel2
             // 
@@ -86,17 +88,30 @@
             this.splitContainer2.SplitterDistance = 102;
             this.splitContainer2.TabIndex = 0;
             // 
-            // listBox1
+            // Device
             // 
-            this.listBox1.DisplayMember = "FriendlyName";
-            this.listBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(0, 0);
-            this.listBox1.Margin = new System.Windows.Forms.Padding(3, 3, 3, 60);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(373, 95);
-            this.listBox1.TabIndex = 0;
-            this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
+            this.Device.DisplayMember = "FriendlyName";
+            this.Device.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Device.FormattingEnabled = true;
+            this.Device.Location = new System.Drawing.Point(0, 0);
+            this.Device.Margin = new System.Windows.Forms.Padding(3, 3, 3, 60);
+            this.Device.Name = "Device";
+            this.Device.Size = new System.Drawing.Size(373, 95);
+            this.Device.TabIndex = 0;
+            this.Device.SelectedIndexChanged += new System.EventHandler(this.Device_SelectedIndexChanged);
+            this.Device.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Device_MouseMove);
+            // 
+            // PlayList
+            // 
+            this.PlayList.DisplayMember = "Name";
+            this.PlayList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.PlayList.FormattingEnabled = true;
+            this.PlayList.Location = new System.Drawing.Point(0, 0);
+            this.PlayList.Margin = new System.Windows.Forms.Padding(0, 30, 0, 0);
+            this.PlayList.Name = "PlayList";
+            this.PlayList.Size = new System.Drawing.Size(373, 433);
+            this.PlayList.TabIndex = 8;
+            this.PlayList.SelectedIndexChanged += new System.EventHandler(this.PlayList_SelectedIndexChanged);
             // 
             // statusStrip1
             // 
@@ -143,18 +158,6 @@
             this.axWindowsMediaPlayer1.Size = new System.Drawing.Size(745, 562);
             this.axWindowsMediaPlayer1.TabIndex = 0;
             // 
-            // PlayList
-            // 
-            this.PlayList.DisplayMember = "Name";
-            this.PlayList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.PlayList.FormattingEnabled = true;
-            this.PlayList.Location = new System.Drawing.Point(0, 0);
-            this.PlayList.Margin = new System.Windows.Forms.Padding(0, 30, 0, 0);
-            this.PlayList.Name = "PlayList";
-            this.PlayList.Size = new System.Drawing.Size(373, 433);
-            this.PlayList.TabIndex = 8;
-            this.PlayList.SelectedIndexChanged += new System.EventHandler(this.PlayList_SelectedIndexChanged);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -162,7 +165,6 @@
             this.ClientSize = new System.Drawing.Size(1122, 562);
             this.Controls.Add(this.splitContainer1);
             this.Name = "Form1";
-            this.ShowIcon = false;
             this.Text = "Sat>Ip Rtsp Sample";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
@@ -189,10 +191,11 @@
         private System.Windows.Forms.ToolStripProgressBar tspgrLevel;
         private System.Windows.Forms.ToolStripProgressBar tspgrQuality;
         private System.Windows.Forms.ToolStripStatusLabel tsslblQuality;
-        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.ListBox Device;
         private AxWMPLib.AxWindowsMediaPlayer axWindowsMediaPlayer1;
         private System.Windows.Forms.ToolStripStatusLabel tsslblLevel;
         private System.Windows.Forms.ListBox PlayList;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
 

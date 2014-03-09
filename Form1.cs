@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using SatIp.RtspSample.Logging;
 using SatIp.RtspSample.Properties;
@@ -78,9 +77,9 @@ namespace SatIp.RtspSample
             {
                 foreach (var device in devices)
                 {
-                    listBox1.Items.Add(device);
+                    Device.Items.Add(device);
                 }
-                listBox1.SelectedIndex = 0;
+                Device.SelectedIndex = 0;
             }
         }
 
@@ -148,9 +147,9 @@ namespace SatIp.RtspSample
             }
         }
 
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void Device_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var device = (UpnpDevice)listBox1.SelectedItem;
+            var device = (UpnpDevice)Device.SelectedItem;
             if (device != null)
             {
                 _keepaLiveTimer = new Timer {Enabled = true };
@@ -181,9 +180,25 @@ namespace SatIp.RtspSample
                     _isstreaming = true;
                     axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination,
                         _rtspDevice.RtspSession.ClientRtpPort);
-                    
                 }
             }
+        }
+
+        private void Device_MouseMove(object sender, MouseEventArgs e)
+        {
+            var lb = (ListBox) sender;
+            var index = lb.IndexFromPoint(e.Location);
+            if (index >= 0 && index < lb.Items.Count)
+            {         
+                string toolTipString = lb.Items[index].ToString();
+                var dev = lb.Items[index] as UpnpDevice;
+                if (dev != null)
+                    toolTipString = string.Format("Frontends: {0} - UniqueDeviceName:{1}", dev.Frontends, dev.Udn);
+                if (toolTip1.GetToolTip(lb) != toolTipString) 
+                    toolTip1.SetToolTip(lb, toolTipString); 
+            }     
+            else
+                toolTip1.Hide(lb); 
         }
     }
 }
