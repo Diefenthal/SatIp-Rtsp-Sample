@@ -167,7 +167,51 @@ namespace SatIp.RtspSample.Upnp
                 }
             }
         }
-        
+
+        //public XDocument Serialise()
+        //{
+        //    XNamespace n0 = "urn:schemas-upnp-org:device-1-0";
+        //    XNamespace n1 = "urn:ses-com:satip";
+
+        //    var satipXNamespace = XNamespace.Get("urn:ses-com:satip");
+        //    var description = new XDocument
+        //    (
+        //        new XElement(n0 + "root",
+        //            new XAttribute("configId", "1"),
+        //            new XElement(n0 + "specVersion", new XElement(n0 + "major", "1"), new XElement(n0 + "minor", "0")),
+        //            new XElement(n0 + "URLBase", BaseHost),
+        //            new XElement(n0 + "device",
+        //                new XElement(n0 + "deviceType", DeviceType),
+        //                new XElement(n0 + "friendlyName", FriendlyName),
+        //                new XElement(n0 + "manufacturer", Manufacturer),
+        //                new XElement(n0 + "manufacturerURL", ManufacturerUrl),
+        //                new XElement(n0 + "modelDescription", ModelDescription),
+        //                new XElement(n0 + "modelName", ModelName),
+        //                new XElement(n0 + "modelNumber", ModelNumber),
+        //                new XElement(n0 + "modelURL", ModelUrl),
+        //                new XElement(n0 + "serialNumber", SerialNumber),
+        //                new XElement(n0 + "UDN", string.Format("uuid:{0}", Udn)),
+                        
+        //    foreach (UpnpIcon icon in _iconList)
+        //    {
+        //       new XElement(n0 + "iconList", new XElement(n0 + "icon", new XElement(n0 + "mimetype", icon.MimeType), new XElement(n0 + "width", icon.Width),
+        //                        new XElement(n0 + "height", icon.Height), new XElement(n0 + "depth", icon.Depth), new XElement(n0 + "url", icon.Url))),
+        //    }
+                            
+        //                    //new XElement(n0 + "icon", new XElement(n0 + "mimetype", "image/png"), new XElement(n0 + "width", "48"),
+        //                    //    new XElement(n0 + "height", "48"), new XElement(n0 + "depth", "24"), new XElement(n0 + "url", "s")),
+        //                    //new XElement(n0 + "icon", new XElement(n0 + "mimetype", "image/jpg"), new XElement(n0 + "width", "120"),
+        //                    //    new XElement(n0 + "height", "120"), new XElement(n0 + "depth", "24"), new XElement(n0 + "url", "d")),
+        //                    //new XElement(n0 + "icon", new XElement(n0 + "mimetype", "image/jpg"), new XElement(n0 + "width", "48"),
+        //                    //    new XElement(n0 + "height", "48"), new XElement(n0 + "depth", "24"), new XElement(n0 + "url", "f"))),
+        //                new XElement(n0 + "presentationURL", PresentationUrl),
+        //                new XElement(n1 + "X_SATIPCAP", Frontends, new XAttribute(XNamespace.Xmlns + "satip", satipXNamespace)))
+        //    ));
+        //    description.Declaration = new XDeclaration("1.0", "utf-8", "true");
+        //    return description;
+        //}
+
+
         #endregion
 
         #region Proeprties implementation
