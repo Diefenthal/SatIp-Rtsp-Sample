@@ -22,12 +22,13 @@ using SatIp.RtspSample.Logging;
 using SatIp.RtspSample.Properties;
 using SatIp.RtspSample.Rtsp;
 using SatIp.RtspSample.Upnp;
+using UPNPLib;
 
 namespace SatIp.RtspSample
 {
     public partial class Form1 : Form
     {
-        private UpnpClient _upnpClient;
+        private DeviceCollector _deviceCollector;
         private RtspDevice _rtspDevice;
         private Boolean _isstreaming;
         private Timer _keepaLiveTimer;
@@ -65,22 +66,39 @@ namespace SatIp.RtspSample
             }           
             
         }
+        public void DeviceAdded(UPnPDevice device)
+        {
+            var newnode = treeView1.Nodes[0].Nodes.Add(device.UniqueDeviceName, device.FriendlyName);
+            newnode.ToolTipText = device.Description;
+            if (device.HasChildren)
+            {
+                var childdevices = device.Children;
+                foreach (UPnPDevice child in childdevices)
+                {
+                    newnode.Nodes.Add(child.UniqueDeviceName, child.FriendlyName).ToolTipText = child.Description;
+                }
+            }
+            if (treeView1.Nodes[0].IsExpanded != true)
+                treeView1.Nodes[0].Expand();
+        }
 
+        private void SearchCompleted()
+        {
+            var tn = treeView1.Nodes[0].LastNode;
+            treeView1.SelectedNode = tn;
+            treeView1.Select();
+            _keepaLiveTimer.Enabled = true;
+        }
+
+        public void DeviceRemoved(string sUdn)
+        {
+            treeView1.Nodes[sUdn].Remove();
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
-            _upnpClient = new UpnpClient();
-            Logger.Info("Lookup for Sat>IpServer");
-            var devices = _upnpClient.Search(Settings.Default.Timeout);
-            Logger.Info("Lookup for Sat>Ip Server is Completed");
-
-            if (devices.Length > -1)
-            {
-                foreach (var device in devices)
-                {
-                    Device.Items.Add(device);
-                }
-                Device.SelectedIndex = 0;
-            }
+            _deviceCollector = new DeviceCollector();
+            _deviceCollector.DeviceAdded += DeviceAdded;
+            _deviceCollector.SearchCompleted += SearchCompleted;
         }
 
         private void PlayList_SelectedIndexChanged(object sender, EventArgs e)
@@ -147,15 +165,18 @@ namespace SatIp.RtspSample
             }
         }
 
-        private void Device_SelectedIndexChanged(object sender, EventArgs e)
+      
+
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            var device = (UpnpDevice)Device.SelectedItem;
+            var finder = new UPnPDeviceFinderClass();
+            var device = finder.FindByUDN(e.Node.Name);
             if (device != null)
             {
-                _keepaLiveTimer = new Timer {Enabled = true };
+                _keepaLiveTimer = new Timer { Enabled = true };
                 _keepaLiveTimer.Tick += _keepaLiveTimer_Tick;
-                Logger.Info(string.Format("{0}{1}{2}", "Sat>Ip Server ", device.FriendlyName, " is selected"));
-                if ((_rtspDevice != null) &&(!_rtspDevice.RtspDeviceName.Equals(device.FriendlyName)))
+
+                if ((_rtspDevice != null) && (!_rtspDevice.RtspDeviceName.Equals(device.FriendlyName)))
                 {
                     _keepaLiveTimer.Stop();
                     _rtspDevice.Dispose();
@@ -172,7 +193,7 @@ namespace SatIp.RtspSample
                     _keepaLiveTimer.Start();
                 }
                 var service = (Service)PlayList.SelectedItem;
-                Logger.Info(string.Format("{0}{1}{2}", "Channel ", service.Name, " is selected"));
+
                 if (!_isstreaming)
                 {
                     _rtspDevice.RtspSession.Setup(service.ToString(), "unicast");
@@ -181,24 +202,8 @@ namespace SatIp.RtspSample
                     axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination,
                         _rtspDevice.RtspSession.ClientRtpPort);
                 }
-            }
-        }
 
-        private void Device_MouseMove(object sender, MouseEventArgs e)
-        {
-            var lb = (ListBox) sender;
-            var index = lb.IndexFromPoint(e.Location);
-            if (index >= 0 && index < lb.Items.Count)
-            {         
-                string toolTipString = lb.Items[index].ToString();
-                var dev = lb.Items[index] as UpnpDevice;
-                if (dev != null)
-                    toolTipString = string.Format("Frontends: {0} - UniqueDeviceName:{1}", dev.Frontends, dev.Udn);
-                if (toolTip1.GetToolTip(lb) != toolTipString) 
-                    toolTip1.SetToolTip(lb, toolTipString); 
-            }     
-            else
-                toolTip1.Hide(lb); 
+            }
         }
     }
 }

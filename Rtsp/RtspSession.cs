@@ -17,15 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using SatIp.RtspSample.Logging;
-using System.Timers;
-using System.Threading;
 
 
 namespace SatIp.RtspSample.Rtsp
@@ -37,8 +34,6 @@ namespace SatIp.RtspSample.Rtsp
         private const int DefaultRtspSessionTimeout = 60;    // unit = s
         private static readonly Regex RegexDescribeResponseSignalInfo = new Regex(@";tuner=\d+,(\d+),(\d+),(\d+),", RegexOptions.Singleline | RegexOptions.IgnoreCase);
         private RtspDevice _rtspDevice;
-        private Socket _rtspSocket;
-        private int _rtspSequenceNum;        
         private string _rtspSessionId;
         private int _rtspSessionTimeToLive;
         private string _rtspStreamId;
@@ -302,7 +297,7 @@ namespace SatIp.RtspSample.Rtsp
                 Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
             }
             
-            Logger.Info("RtspSession-Setup : \r\n {0}", response.ToString);
+            Logger.Info("RtspSession-Setup : \r\n {0}", response);
             if (!response.Headers.TryGetValue("com.ses.streamID", out _rtspStreamId))
             {
                 Logger.Error(string.Format("Failed to tune, not able to locate stream ID header in RTSP SETUP response"));
@@ -390,7 +385,7 @@ namespace SatIp.RtspSample.Rtsp
         {
             _rtspClient = new RtspClient(_rtspDevice.RtspServerAddress);
             RtspResponse response;
-            var data = "";
+            string data;
             if (string.IsNullOrEmpty(query))
             {
                 data = string.Format("rtsp://{0}:{1}/stream={2}", _rtspDevice.RtspServerAddress,
@@ -407,7 +402,7 @@ namespace SatIp.RtspSample.Rtsp
             {
                 Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
             }
-            Logger.Info("RtspSession-Play : \r\n {0}", response.ToString);
+            Logger.Info("RtspSession-Play : \r\n {0}", response);
             string sessionHeader;
             if (!response.Headers.TryGetValue("Session", out sessionHeader))
             {
@@ -441,7 +436,7 @@ namespace SatIp.RtspSample.Rtsp
             {
                 Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
             }
-            Logger.Info("RtspSession-Options : \r\n {0}", response.ToString);
+            Logger.Info("RtspSession-Options : \r\n {0}", response);
             string optionsHeader;
             if (!response.Headers.TryGetValue("Public", out optionsHeader))
             {
@@ -474,7 +469,7 @@ namespace SatIp.RtspSample.Rtsp
             {
                 Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
             }
-            Logger.Info("RtspSession-Describe : \r\n {0}", response.ToString);
+            Logger.Info("RtspSession-Describe : \r\n {0}", response);
             var m = RegexDescribeResponseSignalInfo.Match(response.Body);
             if (m.Success)
             {
@@ -514,7 +509,7 @@ namespace SatIp.RtspSample.Rtsp
             {
                 Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
             }
-            Logger.Info("RtspSession-TearDown : \r\n {0}", response.ToString);
+            Logger.Info("RtspSession-TearDown : \r\n {0}", response);
             return response.StatusCode;
         }
 

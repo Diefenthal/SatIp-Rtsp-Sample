@@ -93,9 +93,7 @@
     <Compile Include="Rtsp\RtspSession.cs" />
     <Compile Include="Rtsp\RtspStatusCode.cs" />
     <Compile Include="Service.cs" />
-    <Compile Include="Upnp\UpnpClient.cs" />
-    <Compile Include="Upnp\UpnpDevice.cs" />
-    <Compile Include="Upnp\UpnpIcon.cs" />
+    <Compile Include="Upnp\SatIpLocator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="log4net.dll" />
@@ -110,6 +108,14 @@
       <VersionMinor>0</VersionMinor>
       <Lcid>0</Lcid>
       <WrapperTool>aximp</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+    <COMReference Include="UPNPLib">
+      <Guid>{DB3442A7-A2E9-4A59-9CB5-F5C1A5D901E5}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
     <COMReference Include="WMPLib">

@@ -17,7 +17,8 @@
 
 using System;
 using System.ComponentModel;
-using SatIp.RtspSample.Upnp;
+using UPNPLib;
+
 
 namespace SatIp.RtspSample.Rtsp
 {
@@ -42,10 +43,11 @@ namespace SatIp.RtspSample.Rtsp
             _rtspSession = new RtspSession(this);
         }
 
-        public RtspDevice(UpnpDevice device)
+        public RtspDevice(UPnPDevice device)
         {
+            var baseHost = new Uri(((IUPnPDeviceDocumentAccess)device).GetDocumentURL());
             _rtspDeviceName = device.FriendlyName;
-            _rtspServerAddress = device.BaseHost;
+            _rtspServerAddress = baseHost.Host;
             _rtspSession = new RtspSession(this);
         }
 

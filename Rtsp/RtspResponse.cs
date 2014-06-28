@@ -144,23 +144,5 @@ namespace SatIp.RtspSample.Rtsp
             }
             return response;
         }
-
-        public string ToString
-        {
-            get
-            {
-                var request = new StringBuilder();
-                foreach (var header in _headers)
-                {
-                    request.AppendFormat("{0}: {1}\r\n", header.Key, header.Value);
-                }
-                request.AppendFormat("\r\n{0}", _body);
-                return request.ToString();
-            }
-        }
-        //protected override
-        //{
-        //    
-        //}
     }
 }

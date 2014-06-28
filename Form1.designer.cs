@@ -30,9 +30,9 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("SatIp Server");
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.Device = new System.Windows.Forms.ListBox();
             this.PlayList = new System.Windows.Forms.ListBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tsslblLevel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -41,6 +41,7 @@
             this.tspgrQuality = new System.Windows.Forms.ToolStripProgressBar();
             this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.treeView1 = new System.Windows.Forms.TreeView();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -78,7 +79,7 @@
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.Device);
+            this.splitContainer2.Panel1.Controls.Add(this.treeView1);
             // 
             // splitContainer2.Panel2
             // 
@@ -87,19 +88,6 @@
             this.splitContainer2.Size = new System.Drawing.Size(373, 562);
             this.splitContainer2.SplitterDistance = 102;
             this.splitContainer2.TabIndex = 0;
-            // 
-            // Device
-            // 
-            this.Device.DisplayMember = "FriendlyName";
-            this.Device.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Device.FormattingEnabled = true;
-            this.Device.Location = new System.Drawing.Point(0, 0);
-            this.Device.Margin = new System.Windows.Forms.Padding(3, 3, 3, 60);
-            this.Device.Name = "Device";
-            this.Device.Size = new System.Drawing.Size(373, 95);
-            this.Device.TabIndex = 0;
-            this.Device.SelectedIndexChanged += new System.EventHandler(this.Device_SelectedIndexChanged);
-            this.Device.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Device_MouseMove);
             // 
             // PlayList
             // 
@@ -158,6 +146,18 @@
             this.axWindowsMediaPlayer1.Size = new System.Drawing.Size(745, 562);
             this.axWindowsMediaPlayer1.TabIndex = 0;
             // 
+            // treeView1
+            // 
+            this.treeView1.Location = new System.Drawing.Point(3, 3);
+            this.treeView1.Name = "treeView1";
+            treeNode1.Name = "Node0";
+            treeNode1.Text = "SatIp Server";
+            this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
+            treeNode1});
+            this.treeView1.Size = new System.Drawing.Size(367, 97);
+            this.treeView1.TabIndex = 0;
+            this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -191,11 +191,11 @@
         private System.Windows.Forms.ToolStripProgressBar tspgrLevel;
         private System.Windows.Forms.ToolStripProgressBar tspgrQuality;
         private System.Windows.Forms.ToolStripStatusLabel tsslblQuality;
-        private System.Windows.Forms.ListBox Device;
         private AxWMPLib.AxWindowsMediaPlayer axWindowsMediaPlayer1;
         private System.Windows.Forms.ToolStripStatusLabel tsslblLevel;
         private System.Windows.Forms.ListBox PlayList;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.TreeView treeView1;
     }
 }
 
