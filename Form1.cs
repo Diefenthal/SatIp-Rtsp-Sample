@@ -107,12 +107,11 @@ namespace SatIp.RtspSample
             try
             {
                 var service = (Service)PlayList.SelectedItem;
+
                 Logger.Info(string.Format("{0}{1}{2}", "Channel ",service.Name , " is selected"));
                 if (_rtspDevice != null) 
-                {
-                    _keepaLiveTimer.Stop();
-                    _rtspDevice.RtspSession.Play(service.ToString());
-                    _keepaLiveTimer.Start();
+                {                    
+                    _rtspDevice.RtspSession.Play(service.ToString());                   
                     axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination, _rtspDevice.RtspSession.ClientRtpPort);
                 }
             }
@@ -164,9 +163,7 @@ namespace SatIp.RtspSample
                 }
                 return list;
             }
-        }
-
-      
+        }      
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {

@@ -97,6 +97,7 @@
     <None Include="app.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Documents\satip_specification_version_1_2_2.pdf" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -113,12 +114,9 @@
     <Compile Include="Rtsp\RtspResponse.cs" />
     <Compile Include="Rtsp\RtspSession.cs" />
     <Compile Include="Rtsp\RtspStatusCode.cs" />
+    <Compile Include="SatIp\SatIpDevice.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="Ssdp\SsdpClient.cs" />
-    <Compile Include="Ssdp\SsdpResponse.cs" />
-    <Compile Include="Upnp\Device.cs" />
-    <Compile Include="Upnp\DeviceDescription.cs" />
-    <Compile Include="Upnp\RootDevice.cs" />
     <Compile Include="Upnp\SatIpLocator.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -126,7 +124,7 @@
     <Content Include="PlayList.m3u">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="GNU GENERAL PUBLIC LICENSE.txt">
+    <Content Include="Documents\GNU GENERAL PUBLIC LICENSE.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -168,6 +166,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
