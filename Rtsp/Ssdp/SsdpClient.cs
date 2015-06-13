@@ -249,7 +249,7 @@ namespace SatIp.Rtsp.Sample
         /// Sends SsdpRequest M-SEARCH 
         /// </summary>
         /// <param name="searchterm"></param>
-        public void FindByType()
+        public void FindByType(string searchterm)
         {
             var query = new StringBuilder();
             query.Append("M-SEARCH * HTTP/1.1\r\n");
@@ -273,7 +273,7 @@ namespace SatIp.Rtsp.Sample
             }
         }
 
-        public void FindByUuid(Uri location, string searchterm )
+        public void FindByUuid(Uri location, string searchterm)
         {
             var query = new StringBuilder();
             query.Append("M-SEARCH * HTTP/1.1\r\n");
@@ -853,4 +853,6 @@ namespace SatIp.Rtsp.Sample
     //    }
     //}
   
+
+
 

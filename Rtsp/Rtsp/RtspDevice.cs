@@ -1,5 +1,5 @@
 ﻿/*  
-    Copyright (C) <2007-2015>  <Kay Diefenthal>
+    Copyright (C) <2007-2014>  <Kay Diefenthal>
 
     SatIp.RtspSample is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,20 +26,21 @@ namespace SatIp.RtspSample.Rtsp
     {
         #region Private Fields
 
-        private String _serverAddress;
-        private String _uniqueDeviceName;      
+        private String _serverAddress;        
         private String _friendlyName;
+        private String _uniqueDeviceName;
         private RtspSession _rtspSession;
         private Boolean _disposed;
+
         #endregion
 
         #region Constructor
 
-        public RtspDevice(string friendlyName, string address, string uniqueDeviceName)
+        public RtspDevice(string friendlyName, string address,string uniqueDeviceName)
         {
             _friendlyName = friendlyName;
-            _serverAddress = address;
-            _uniqueDeviceName = uniqueDeviceName;         
+            _uniqueDeviceName = uniqueDeviceName;
+            _serverAddress = address;                       
             _rtspSession = new RtspSession(this);
         }
 
@@ -55,6 +56,7 @@ namespace SatIp.RtspSample.Rtsp
         {
             Dispose(false);
         }   
+
         #endregion
 
         #region Properties
@@ -65,16 +67,16 @@ namespace SatIp.RtspSample.Rtsp
             set { if (_serverAddress != value){_serverAddress = value;OnPropertyChanged("ServerAddress");}}
         }
 
+        public String FiendlyName
+        {
+            get { return _friendlyName; }
+            set { if (_friendlyName != value) { _friendlyName = value; OnPropertyChanged("FiendlyName"); } }
+        }
+
         public String UniqueDeviceName
         {
             get { return _uniqueDeviceName; }
             set { if (_uniqueDeviceName != value) { _uniqueDeviceName = value; OnPropertyChanged("UniqueDeviceName"); } }
-        }
-        
-        public String FriendlyName
-        {
-            get { return _friendlyName; }
-            set { if (_friendlyName != value) { _friendlyName = value; OnPropertyChanged("FriendlyName"); } }
         }
 
         public RtspSession RtspSession
@@ -121,6 +123,6 @@ namespace SatIp.RtspSample.Rtsp
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
+        } 
     }
 }

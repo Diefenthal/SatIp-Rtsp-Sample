@@ -1,5 +1,5 @@
 ﻿/*  
-    Copyright (C) <2007-2015>  <Kay Diefenthal>
+    Copyright (C) <2007-2014>  <Kay Diefenthal>
 
     SatIp.RtspSample is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,7 +14,6 @@
     You should have received a copy of the GNU General Public License
     along with SatIp.RtspSample.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -107,11 +106,10 @@ namespace SatIp.RtspSample
             try
             {
                 var service = (Service)PlayList.SelectedItem;
-
                 Logger.Info(string.Format("{0}{1}{2}", "Channel ",service.Name , " is selected"));
                 if (_rtspDevice != null) 
                 {                    
-                    _rtspDevice.RtspSession.Play(service.ToString());                   
+                    _rtspDevice.RtspSession.Play(service.ToString());                    
                     axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination, _rtspDevice.RtspSession.ClientRtpPort);
                 }
             }
@@ -163,7 +161,9 @@ namespace SatIp.RtspSample
                 }
                 return list;
             }
-        }      
+        }
+
+      
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
@@ -174,21 +174,21 @@ namespace SatIp.RtspSample
                 _keepaLiveTimer = new Timer { Enabled = true };
                 _keepaLiveTimer.Tick += _keepaLiveTimer_Tick;
 
-                if ((_rtspDevice != null) && (!_rtspDevice.RtspDeviceName.Equals(device.FriendlyName)))
+                if ((_rtspDevice != null) && (!_rtspDevice.FriendlyName.Equals(device.FriendlyName)))
                 {
-                    _keepaLiveTimer.Stop();
+                    //_keepaLiveTimer.Stop();
                     _rtspDevice.Dispose();
                     _rtspDevice = new RtspDevice(device);
-                    _keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
-                    _keepaLiveTimer.Start();
+                    //_keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
+                    //_keepaLiveTimer.Start();
                     _isstreaming = false;
                 }
                 else
                 {
-                    _keepaLiveTimer.Stop();
+                    //_keepaLiveTimer.Stop();
                     _rtspDevice = new RtspDevice(device);
-                    _keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
-                    _keepaLiveTimer.Start();
+                    //_keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
+                    //_keepaLiveTimer.Start();
                 }
                 var service = (Service)PlayList.SelectedItem;
 

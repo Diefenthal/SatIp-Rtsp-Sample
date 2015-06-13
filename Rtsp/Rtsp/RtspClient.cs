@@ -1,0 +1,137 @@
+﻿using System;
+using System.Globalization;
+using System.Net.Sockets;
+
+namespace SatIp.RtspSample.Rtsp
+{
+    /// <summary>
+    /// A simple implementation of an RTSP client.
+    /// </summary>
+    public class RtspClient : IDisposable
+    {
+        #region variables
+
+        private readonly string _serverHost;
+        private TcpClient _client = null;
+        private int _cseq = 1;
+        private readonly object _lockObject = new object();
+        private bool _disposed;
+        #endregion
+
+
+        /// <summary>
+        /// Initialise a new instance of the <see cref="RtspClient"/> class.
+        /// </summary>
+        /// <param name="serverHost">The RTSP server host name or IP address.</param>
+        public RtspClient(string serverHost)
+        {
+            _serverHost = serverHost;
+
+            _client = new TcpClient(serverHost, 554);
+        }
+
+
+        ~RtspClient()
+        {
+            Dispose(false);
+        }
+
+
+        /// <summary>
+        /// Send an RTSP request and retrieve the response.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="response">The response.</param>
+        /// <returns>the response status code</returns>
+        public RtspStatusCode SendRequest(RtspRequest request, out RtspResponse response)
+        {
+            response = null;
+            lock (_lockObject)
+            {
+                NetworkStream stream = null;
+                try
+                {
+                    stream = _client.GetStream();
+                    if (stream == null)
+                    {
+                        throw new Exception();
+                    }
+                }
+                catch
+                {
+                    _client.Close();
+                }
+
+                try
+                {
+                    if (_client == null)
+                    {
+                        _client = new TcpClient(_serverHost, 554);
+                    }
+                    // Send the request and get the response.
+                    request.Headers.Add("CSeq", _cseq.ToString(CultureInfo.InvariantCulture));
+                    _cseq++;
+                    byte[] requestBytes = request.Serialise();
+
+                    stream.Write(requestBytes, 0, requestBytes.Length);
+                    byte[] responseBytes = new byte[_client.ReceiveBufferSize];
+                    int byteCount = stream.Read(responseBytes, 0, responseBytes.Length);
+                    response = RtspResponse.Deserialise(responseBytes, byteCount);
+                    // Did we get the whole response?
+                    string contentLengthString;
+                    int contentLength = 0;
+                    if (response.Headers.TryGetValue("Content-Length", out contentLengthString))
+                    {
+                        contentLength = int.Parse(contentLengthString);
+                        if ((string.IsNullOrEmpty(response.Body) && contentLength > 0) || response.Body.Length < contentLength)
+                        {
+                            if (response.Body == null)
+                            {
+                                response.Body = string.Empty;
+                            }
+                            while (byteCount > 0 && response.Body.Length < contentLength)
+                            {
+                                byteCount = stream.Read(responseBytes, 0, responseBytes.Length);
+                                response.Body += System.Text.Encoding.UTF8.GetString(responseBytes, 0, byteCount);
+                            }
+                        }
+                    }
+                    return response.StatusCode;
+
+                }
+                finally
+                {
+                    stream.Close();
+                }
+            }
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+
+        #region Protected Methods
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    lock (_lockObject)
+                    {
+                        if (_client != null)
+                        {
+                            _client.Close();
+                            _client = null;
+                        }
+                    }
+                }
+            }
+            _disposed = true;
+        }
+        #endregion
+    }
+
+}
