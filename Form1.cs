@@ -1,5 +1,5 @@
 ﻿/*  
-    Copyright (C) <2007-2014>  <Kay Diefenthal>
+    Copyright (C) <2007-2015>  <Kay Diefenthal>
 
     SatIp.RtspSample is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ namespace SatIp.RtspSample
 {
     public partial class Form1 : Form
     {
-        private DeviceCollector _deviceCollector;
+        private DeviceCollector _deviceCollector =null;
         private RtspDevice _rtspDevice;
         private Boolean _isstreaming;
         private Timer _keepaLiveTimer;
@@ -37,6 +37,7 @@ namespace SatIp.RtspSample
         {
             InitializeComponent();
             Logger.SetLogFilePath("Sample.log", Settings.Default.LogLevel);
+            
             var source = GetStationsFromLocalFile_m3u(Application.StartupPath + @"\PlayList.m3u");
             using (var enumerator = source.GetEnumerator())
             {
@@ -68,6 +69,7 @@ namespace SatIp.RtspSample
         }
         public void DeviceAdded(UPnPDevice device)
         {
+            Logger.Info("Device with UUID :{0} found,and will added to the Devices Tree", device.UniqueDeviceName);
             var newnode = treeView1.Nodes[0].Nodes.Add(device.UniqueDeviceName, device.FriendlyName);
             newnode.ToolTipText = device.Description;
             if (device.HasChildren)
@@ -84,20 +86,39 @@ namespace SatIp.RtspSample
 
         private void SearchCompleted()
         {
-            var tn = treeView1.Nodes[0].LastNode;
-            treeView1.SelectedNode = tn;
-            treeView1.Select();
-            _keepaLiveTimer.Enabled = true;
+            Logger.Info("Search Complete, but listen for any other Notify Messages");
+            if (treeView1.Nodes.Count > 0)
+            {
+                var tn = treeView1.Nodes[0].LastNode;
+                treeView1.SelectedNode = tn;
+                treeView1.Select();
+                
+                _keepaLiveTimer.Enabled = true;
+            }
+            else
+            {
+                Logger.Warn("No Sat>Ip server found  please check their connection and power states");
+            }
         }
 
         public void DeviceRemoved(string sUdn)
         {
-            treeView1.Nodes[sUdn].Remove();
+            Logger.Info("Device with UUID :{0} restarts,and will removed from the Devices Tree",sUdn);
+            if(_rtspDevice.UniqueDeviceName.Equals(sUdn))
+            {
+                _keepaLiveTimer.Stop();
+                axWindowsMediaPlayer1.URL = "";                
+                _rtspDevice.Dispose();
+            }
+            treeView1.Nodes["Node0"].Nodes[sUdn].Remove();
+            
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+            Logger.Info("Search Started");
             _deviceCollector = new DeviceCollector();
             _deviceCollector.DeviceAdded += DeviceAdded;
+            _deviceCollector.DeviceRemoved += DeviceRemoved;
             _deviceCollector.SearchCompleted += SearchCompleted;
         }
 
@@ -106,11 +127,13 @@ namespace SatIp.RtspSample
             try
             {
                 var service = (Service)PlayList.SelectedItem;
-                Logger.Info(string.Format("{0}{1}{2}", "Channel ",service.Name , " is selected"));
+                Logger.Info("Selected Service is {0}", service.Name);
                 if (_rtspDevice != null) 
                 {                    
                     _rtspDevice.RtspSession.Play(service.ToString());                    
-                    axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination, _rtspDevice.RtspSession.ClientRtpPort);
+                    axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination, _rtspDevice.RtspSession.RtpPort);
+                    Text = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination,
+                        _rtspDevice.RtspSession.RtpPort);
                 }
             }
             catch (Exception exception)
@@ -171,6 +194,7 @@ namespace SatIp.RtspSample
             var device = finder.FindByUDN(e.Node.Name);
             if (device != null)
             {
+                Logger.Info("Selected Sat>Ip Server is {0}", device.FriendlyName);
                 _keepaLiveTimer = new Timer { Enabled = true };
                 _keepaLiveTimer.Tick += _keepaLiveTimer_Tick;
 
@@ -179,26 +203,28 @@ namespace SatIp.RtspSample
                     //_keepaLiveTimer.Stop();
                     _rtspDevice.Dispose();
                     _rtspDevice = new RtspDevice(device);
-                    //_keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
-                    //_keepaLiveTimer.Start();
+                    _keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
+                    _keepaLiveTimer.Start();
                     _isstreaming = false;
                 }
                 else
                 {
                     //_keepaLiveTimer.Stop();
                     _rtspDevice = new RtspDevice(device);
-                    //_keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
-                    //_keepaLiveTimer.Start();
+                    _keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
+                    _keepaLiveTimer.Start();
                 }
                 var service = (Service)PlayList.SelectedItem;
-
+                Logger.Info("Selected Service is {0}", service.Name);
                 if (!_isstreaming)
                 {
                     _rtspDevice.RtspSession.Setup(service.ToString(), "unicast");
                     _rtspDevice.RtspSession.Play(String.Empty);
                     _isstreaming = true;
                     axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination,
-                        _rtspDevice.RtspSession.ClientRtpPort);
+                        _rtspDevice.RtspSession.RtpPort);
+                    Text = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination,
+                        _rtspDevice.RtspSession.RtpPort);
                 }
 
             }

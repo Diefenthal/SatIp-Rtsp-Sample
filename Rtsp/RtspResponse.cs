@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using SatIp.RtspSample.Logging;
 
 namespace SatIp.RtspSample.Rtsp
 {
@@ -124,6 +125,7 @@ namespace SatIp.RtspSample.Rtsp
         {
             var response = new RtspResponse();
             var responseString = Encoding.UTF8.GetString(responseBytes, 0, responseByteCount);
+            Logger.Info(responseString);
             var m = RegexStatusLine.Match(responseString);
             if (m.Success)
             {

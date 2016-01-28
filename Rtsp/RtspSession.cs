@@ -24,6 +24,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using SatIp.RtspSample.Logging;
+using SatIp.RtspSample.Properties;
 
 
 namespace SatIp.RtspSample.Rtsp
@@ -32,11 +33,11 @@ namespace SatIp.RtspSample.Rtsp
     {
         #region Private Fields
         private static readonly Regex RegexRtspSessionHeader = new Regex(@"\s*([^\s;]+)(;timeout=(\d+))?");
-        private const int DefaultRtspSessionTimeout = 60;    // unit = s
+        private const int DefaultRtspSessionTimeout = 30;    // unit = s
         private static readonly Regex RegexDescribeResponseSignalInfo = new Regex(@";tuner=\d+,(\d+),(\d+),(\d+),", RegexOptions.Singleline | RegexOptions.IgnoreCase);
         private RtspDevice _rtspDevice;
         private string _rtspSessionId;
-        private int _rtspSessionTimeToLive;
+        private int _rtspSessionTimeToLive =0;
         private string _rtspStreamId;
         private int _clientRtpPort;
         private int _clientRtcpPort;
@@ -50,19 +51,24 @@ namespace SatIp.RtspSample.Rtsp
         private string _transport;
         private int _signalLevel;        
         private int _signalQuality;
-        private RtspClient _rtspClient;
-        
+        //private RtspClient _rtspClient;
+        private Socket _rtspSocket;
+        private int _rtspSequenceNum = 1;
+        private bool _disposed = false;
         #endregion
 
         #region Constructor
 
         public RtspSession(RtspDevice rtspDevice)
         {
-            _rtspDevice = rtspDevice;
-            
+            //Logger.SetLogFilePath("Rtsp.log", Settings.Default.LogLevel);
+            _rtspDevice = rtspDevice;       
             
         }
-
+        ~RtspSession()
+        {
+            Dispose(false);
+        }   
         #endregion
 
         #region Properties
@@ -90,7 +96,7 @@ namespace SatIp.RtspSample.Rtsp
             {
                 if (_rtspSessionTimeToLive == 0)
                     _rtspSessionTimeToLive = DefaultRtspSessionTimeout;
-                return _rtspSessionTimeToLive;
+                return _rtspSessionTimeToLive * 10 - 20;
             }
             set { if (_rtspSessionTimeToLive != value) { _rtspSessionTimeToLive = value; OnPropertyChanged("RtspSessionTimeToLive"); } }
         }
@@ -238,14 +244,15 @@ namespace SatIp.RtspSample.Rtsp
         #endregion
 
         #region Private Methods
-        private void ProcessSessionHeader(string sessionHeader)
+
+        private void ProcessSessionHeader(string sessionHeader ,string response)
         {
             if (!string.IsNullOrEmpty(sessionHeader))
             {
                 var m = RegexRtspSessionHeader.Match(sessionHeader);
                 if (!m.Success)
                 {
-                    //Logger.Error("Failed to tune, RTSP SETUP response session header {0} format not recognised", sessionHeader);
+                    Logger.Error("Failed to tune, RTSP {0} response session header {1} format not recognised",response, sessionHeader);
                 }
                 _rtspSessionId = m.Groups[1].Captures[0].Value;
                 _rtspSessionTimeToLive = m.Groups[3].Captures.Count == 1 ? int.Parse(m.Groups[3].Captures[0].Value) : DefaultRtspSessionTimeout;
@@ -277,8 +284,8 @@ namespace SatIp.RtspSample.Rtsp
                             else if (parts[0].Equals("port"))
                             {
                                 var ports = parts[1].Split('-');
-                                _serverRtpPort = int.Parse(ports[0]);
-                                _serverRtcpPort = int.Parse(ports[1]);
+                                _rtpPort = int.Parse(ports[0]);
+                                _rtcpPort = int.Parse(ports[1]);
                             }
                             else if (parts[0].Equals("ttl"))
                             {
@@ -293,33 +300,109 @@ namespace SatIp.RtspSample.Rtsp
                                 var ports = parts[1].Split('-');
                                 var rtp = int.Parse(ports[0]);
                                 var rtcp = int.Parse(ports[1]);
-                                if (!rtp.Equals(_clientRtpPort))
-                                {
-                                    //Logger.Error("SAT>IP base: server specified RTP client port {0} instead of {1}", rtp, _clientRtpPort);
-                                }
-                                if (!rtcp.Equals(_clientRtcpPort))
-                                {
-                                    //Logger.Error("SAT>IP base: server specified RTCP client port {0} instead of {1}", rtcp, _clientRtcpPort);
-                                }
-                                _clientRtpPort = rtp;
-                                _clientRtcpPort = rtcp;
+                                //if (!rtp.Equals(_rtpPort))
+                                //{
+                                //    Logger.Error("SAT>IP base: server specified RTP client port {0} instead of {1}", rtp, _rtpPort);
+                                //}
+                                //if (!rtcp.Equals(_rtcpPort))
+                                //{
+                                //    Logger.Error("SAT>IP base: server specified RTCP client port {0} instead of {1}", rtcp, _rtcpPort);
+                                //}
+                                _rtpPort = rtp;
+                                _rtcpPort = rtcp;
                             }
                         }
                     }
                 }
             }
         }
-        
+        private void Connect()
+        {
+            _rtspSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            var ip = IPAddress.Parse(_rtspDevice.ServerAddress);
+            var rtspEndpoint = new IPEndPoint(ip, 554);
+            _rtspSocket.Connect(rtspEndpoint);
+        }
+        private void Disconnect()
+        {
+            if (_rtspSocket != null && _rtspSocket.Connected)
+            {
+                _rtspSocket.Shutdown(SocketShutdown.Both);
+                _rtspSocket.Close();
+            }
+        }
+        private void SendRequest(RtspRequest request)
+        {
+            if (_rtspSocket == null)
+            {
+                Connect();
+            }
+            try
+            {
+                request.Headers.Add("CSeq", _rtspSequenceNum.ToString());
+                _rtspSequenceNum++;
+                byte[] requestBytes = request.Serialise();
+                if (_rtspSocket != null)
+                {
+                    var requestBytesCount = _rtspSocket.Send(requestBytes, requestBytes.Length, SocketFlags.None);
+                    if (requestBytesCount < 1)
+                    {
+
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+            }
+        }
+        private void ReceiveResponse(out RtspResponse response)
+        {
+            response = null;
+            var responseBytesCount = 0;
+            byte[] responseBytes = new byte[1024];
+            try
+            {
+                responseBytesCount = _rtspSocket.Receive(responseBytes, responseBytes.Length, SocketFlags.None);
+                response = RtspResponse.Deserialise(responseBytes, responseBytesCount);
+                string contentLengthString;
+                int contentLength = 0;
+                if (response.Headers.TryGetValue("Content-Length", out contentLengthString))
+                {
+                    contentLength = int.Parse(contentLengthString);
+                    if ((string.IsNullOrEmpty(response.Body) && contentLength > 0) || response.Body.Length < contentLength)
+                    {
+                        if (response.Body == null)
+                        {
+                            response.Body = string.Empty;
+                        }
+                        while (responseBytesCount > 0 && response.Body.Length < contentLength)
+                        {
+                            responseBytesCount = _rtspSocket.Receive(responseBytes, responseBytes.Length, SocketFlags.None);
+                            response.Body += System.Text.Encoding.UTF8.GetString(responseBytes, 0, responseBytesCount);
+                        }
+                    }
+                }
+            }
+            catch (SocketException)
+            {
+            }
+        }
 
         #endregion
 
         #region Public Methods
 
         public RtspStatusCode Setup(string query, string transporttype)
-        {            
+        {        
+    
             RtspRequest request;
             RtspResponse response;
-            _rtspClient = new RtspClient(_rtspDevice.ServerAddress);
+            //_rtspClient = new RtspClient(_rtspDevice.ServerAddress);
+            if ((_rtspSocket == null))
+            {
+                Connect();
+            }
             if (string.IsNullOrEmpty(_rtspSessionId))
             {
                 request = new RtspRequest(RtspMethod.Setup, string.Format("rtsp://{0}:{1}/?{2}", _rtspDevice.ServerAddress,554, query), 1, 0);
@@ -363,28 +446,27 @@ namespace SatIp.RtspSample.Rtsp
                 }
                 
             }
-            if (_rtspClient.SendRequest(request, out response) != RtspStatusCode.Ok)
-            {
-                Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
-            }
-            
-            Logger.Info("RtspSession-Setup : \r\n {0}", response);
+            SendRequest(request);
+            ReceiveResponse(out response);
+
+            //if (_rtspClient.SendRequest(request, out response) != RtspStatusCode.Ok)
+            //{
+            //    Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
+            //}
             if (!response.Headers.TryGetValue("com.ses.streamID", out _rtspStreamId))
             {
-                Logger.Error(string.Format("Failed to tune, not able to locate stream ID header in RTSP SETUP response"));
+                Logger.Error(string.Format("Failed to tune, not able to locate Stream ID header in RTSP SETUP response"));
             }
             string sessionHeader;
             if (!response.Headers.TryGetValue("Session", out sessionHeader))
             {
-                Logger.Error(string.Format("Failed to tune, not able to locate session header in RTSP SETUP response"));
+                Logger.Error(string.Format("Failed to tune, not able to locate Session header in RTSP SETUP response"));
             }
-            ProcessSessionHeader(sessionHeader);
-
-            var foundRtpTransport = false;           
+            ProcessSessionHeader(sessionHeader,"Setup");                      
             string transportHeader;
             if (!response.Headers.TryGetValue("Transport", out transportHeader))
             {
-                Logger.Error(string.Format("Failed to tune, not able to locate transport header in RTSP SETUP response"));
+                Logger.Error(string.Format("Failed to tune, not able to locate Transport header in RTSP SETUP response"));
             }
             ProcessTransportHeader(transportHeader);            
             return response.StatusCode;
@@ -392,7 +474,11 @@ namespace SatIp.RtspSample.Rtsp
 
         public RtspStatusCode Play(string query)
         {
-            _rtspClient = new RtspClient(_rtspDevice.ServerAddress);
+            if ((_rtspSocket == null))
+            {
+                Connect();
+            }
+            //_rtspClient = new RtspClient(_rtspDevice.ServerAddress);
             RtspResponse response;
             string data;
             if (string.IsNullOrEmpty(query))
@@ -407,28 +493,34 @@ namespace SatIp.RtspSample.Rtsp
             }
             var request = new RtspRequest(RtspMethod.Play, data, 1, 0);
             request.Headers.Add("Session", _rtspSessionId);
-            if (_rtspClient.SendRequest(request, out response) != RtspStatusCode.Ok)
-            {
-                Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
-            }
-            Logger.Info("RtspSession-Play : \r\n {0}", response);
+            SendRequest(request);
+            ReceiveResponse(out response);
+            //if (_rtspClient.SendRequest(request, out response) != RtspStatusCode.Ok)
+            //{
+            //    Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
+            //}
+            //Logger.Info("RtspSession-Play : \r\n {0}", response);
             string sessionHeader;
             if (!response.Headers.TryGetValue("Session", out sessionHeader))
             {
-                Logger.Error(string.Format("Failed to tune, not able to locate session header in RTSP SETUP response"));
+                Logger.Error(string.Format("Failed to tune, not able to locate Session header in RTSP Play response"));
             }
-            ProcessSessionHeader(sessionHeader);
+            ProcessSessionHeader(sessionHeader,"Play");
             string rtpinfoHeader;
             if (!response.Headers.TryGetValue("RTP-Info", out rtpinfoHeader))
             {
-                Logger.Error(string.Format("Failed to tune, not able to locate session header in RTSP SETUP response"));
+                Logger.Error(string.Format("Failed to tune, not able to locate Rtp-Info header in RTSP Play response"));
             }
             return response.StatusCode;
         }
 
         public RtspStatusCode Options()
         {
-            _rtspClient = new RtspClient(_rtspDevice.ServerAddress);
+            if ((_rtspSocket == null))
+            {
+                Connect();
+            }
+            //_rtspClient = new RtspClient(_rtspDevice.ServerAddress);
             RtspRequest request;
             RtspResponse response;
             
@@ -442,28 +534,34 @@ namespace SatIp.RtspSample.Rtsp
                 request = new RtspRequest(RtspMethod.Options, string.Format("rtsp://{0}:{1}/", _rtspDevice.ServerAddress, 554), 1, 0);
                 request.Headers.Add("Session", _rtspSessionId);
             }
-            if (_rtspClient.SendRequest(request, out response) != RtspStatusCode.Ok)
-            {
-                Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
-            }
-            Logger.Info("RtspSession-Options : \r\n {0}", response);
+            SendRequest(request);
+            ReceiveResponse(out response);
+            //if (_rtspClient.SendRequest(request, out response) != RtspStatusCode.Ok)
+            //{
+            //    Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
+            //}
+            //Logger.Info("RtspSession-Options : \r\n {0}", response);
             string sessionHeader;
             if (!response.Headers.TryGetValue("Session", out sessionHeader))
             {
-                Logger.Error(string.Format("Failed to tune, not able to locate session header in RTSP SETUP response"));
+                Logger.Error(string.Format("Failed to tune, not able to locate session header in RTSP Options response"));
             }
-            ProcessSessionHeader(sessionHeader);
+            ProcessSessionHeader(sessionHeader,"Options");
             string optionsHeader;
             if (!response.Headers.TryGetValue("Public", out optionsHeader))
             {
-                Logger.Error(string.Format("Failed to tune, not able to locate session header in RTSP Options response"));
+                Logger.Error(string.Format("Failed to tune, not able to Options header in RTSP Options response"));
             }
             return response.StatusCode;
         }
 
         public RtspStatusCode Describe(out int level, out int quality)
         {
-            _rtspClient = new RtspClient(_rtspDevice.ServerAddress);
+            if ((_rtspSocket == null))
+            {
+                Connect();
+            }
+            //_rtspClient = new RtspClient(_rtspDevice.ServerAddress);
             RtspRequest request;
             RtspResponse response;
             level = 0;
@@ -481,17 +579,19 @@ namespace SatIp.RtspSample.Rtsp
                 request.Headers.Add("Accept", "application/sdp");
                 request.Headers.Add("Session", _rtspSessionId);
             }
-            if (_rtspClient.SendRequest(request, out response) != RtspStatusCode.Ok)
-            {
-                Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
-            }
-            Logger.Info("RtspSession-Describe : \r\n {0}", response);
+            SendRequest(request);
+            ReceiveResponse(out response);
+            //if (_rtspClient.SendRequest(request, out response) != RtspStatusCode.Ok)
+            //{
+            //    Logger.Error("Failed to tune, non-OK RTSP Describe status code {0} {1}", response.StatusCode, response.ReasonPhrase);
+            //}
+            //Logger.Info("RtspSession-Describe : \r\n {0}", response);
             string sessionHeader;
             if (!response.Headers.TryGetValue("Session", out sessionHeader))
             {
-                Logger.Error(string.Format("Failed to tune, not able to locate session header in RTSP SETUP response"));
+                Logger.Error(string.Format("Failed to tune, not able to locate session header in RTSP Describe response"));
             }
-            ProcessSessionHeader(sessionHeader);
+            ProcessSessionHeader(sessionHeader,"Describe");
             var m = RegexDescribeResponseSignalInfo.Match(response.Body);
             if (m.Success)
             {
@@ -516,22 +616,26 @@ namespace SatIp.RtspSample.Rtsp
              */
            
             
-            return response.StatusCode;
-            
+            return response.StatusCode;            
         }
+
         public RtspStatusCode TearDown()
         {
-            _rtspClient = new RtspClient(_rtspDevice.ServerAddress);
+            if ((_rtspSocket == null))
+            {
+                Connect();
+            }
+            //_rtspClient = new RtspClient(_rtspDevice.ServerAddress);
             RtspResponse response;
             
             var request = new RtspRequest(RtspMethod.Teardown, string.Format("rtsp://{0}:{1}/stream={2}", _rtspDevice.ServerAddress,554, _rtspStreamId), 1, 0);
             request.Headers.Add("Session", _rtspSessionId);
-
-            if (_rtspClient.SendRequest(request, out response) != RtspStatusCode.Ok)
-            {
-                Logger.Error("Failed to tune, non-OK RTSP SETUP status code {0} {1}", response.StatusCode, response.ReasonPhrase);
-            }
-            Logger.Info("RtspSession-TearDown : \r\n {0}", response);
+            SendRequest(request);
+            ReceiveResponse(out response);
+            //if (_rtspClient.SendRequest(request, out response) != RtspStatusCode.Ok)
+            //{
+            //    Logger.Error("Failed to tune, non-OK RTSP Teardown status code {0} {1}", response.StatusCode, response.ReasonPhrase);
+            //}            
             return response.StatusCode;
         }
 
@@ -558,8 +662,21 @@ namespace SatIp.RtspSample.Rtsp
 
         public void Dispose()
         {
-            TearDown();
-            //Disconnect();
+            Dispose(true);
+            GC.SuppressFinalize(this);//Disconnect();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    TearDown();
+                    Disconnect();
+                }
+            }
+            _disposed = true;
         }
     }
 }

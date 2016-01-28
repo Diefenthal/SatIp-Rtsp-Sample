@@ -346,7 +346,7 @@ public class Service : INotifyPropertyChanged
                 value = string.Format("src={0}&freq={1}&pol={2}&msys={3}&sr={4}&fec={5}&mtype={6}&pids={7}", _source, _frequency, _polarity, _modulationSystem, _symbolRate, _fecrate, _modulationType, _pids);
                 break;
             case "dvbs2":
-                value = string.Format("src={0}&freq={1}&pol={2}&msys={3}&sr={4}&fec={5}&mtype={6}ro={7}&plts={8}&pids={9}", _source, _frequency, _polarity, _modulationSystem, _symbolRate, _fecrate, _modulationType, _rollOff, _pilotTones, _pids);
+                value = string.Format("src={0}&freq={1}&pol={2}&msys={3}&sr={4}&fec={5}&mtype={6}&ro={7}&plts={8}&pids={9}", _source, _frequency, _polarity, _modulationSystem, _symbolRate, _fecrate, _modulationType, _rollOff, _pilotTones, _pids);
                 break;
             case "dvbt":
                 value = string.Format("freq={0}&bw={1}&msys={2}&tmode={3}&mtype={4}&gi={5}&fec={6}&pids={7}", _frequency, _bandwidth, _modulationSystem, _transmissionMode, _modulationType, _guardInterval, _fecrate, _pids);

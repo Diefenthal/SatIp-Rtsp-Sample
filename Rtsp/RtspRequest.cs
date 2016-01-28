@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using SatIp.RtspSample.Logging;
 
 namespace SatIp.RtspSample.Rtsp
 {
@@ -134,6 +135,7 @@ namespace SatIp.RtspSample.Rtsp
                 request.AppendFormat("{0}: {1}\r\n", header.Key, header.Value);
             }
             request.AppendFormat("\r\n{0}", _body);
+            Logger.Info(request.ToString());
             return Encoding.UTF8.GetBytes(request.ToString());
         }
     }
