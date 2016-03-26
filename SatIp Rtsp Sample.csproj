@@ -95,6 +95,7 @@
     <Compile Include="Rtsp\RtspStatusCode.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="Ssdp\SsdpClient.cs" />
+    <Compile Include="TransmissionMode.cs" />
     <Compile Include="Upnp\SatIpLocator.cs" />
   </ItemGroup>
   <ItemGroup>

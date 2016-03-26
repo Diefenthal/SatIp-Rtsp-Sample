@@ -218,7 +218,7 @@ namespace SatIp.RtspSample
                 Logger.Info("Selected Service is {0}", service.Name);
                 if (!_isstreaming)
                 {
-                    _rtspDevice.RtspSession.Setup(service.ToString(), "unicast");
+                    _rtspDevice.RtspSession.Setup(service.ToString(), TransmissionMode.Unicast);
                     _rtspDevice.RtspSession.Play(String.Empty);
                     _isstreaming = true;
                     axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination,
