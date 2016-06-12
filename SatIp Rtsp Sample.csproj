@@ -86,6 +86,18 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Rtcp\ReportBlock.cs" />
+    <Compile Include="Rtcp\RtcpAppPacket.cs" />
+    <Compile Include="Rtcp\RtcpByePacket.cs" />
+    <Compile Include="Rtcp\RtcpListener.cs" />
+    <Compile Include="Rtcp\RtcpPacket.cs" />
+    <Compile Include="Rtcp\RtcpReceiverReportPacket.cs" />
+    <Compile Include="Rtcp\RtcpSenderReportPacket.cs" />
+    <Compile Include="Rtcp\RtcpSourceDescriptionPacket.cs" />
+    <Compile Include="Rtcp\SourceDescriptionBlock.cs" />
+    <Compile Include="Rtcp\SourceDescriptionItem.cs" />
+    <Compile Include="Rtp\RtpListener.cs" />
+    <Compile Include="Rtp\RtpPacket.cs" />
     <Compile Include="Rtsp\RtspClient.cs" />
     <Compile Include="Rtsp\RtspDevice.cs" />
     <Compile Include="Rtsp\RtspMethod.cs" />
@@ -97,6 +109,7 @@
     <Compile Include="Ssdp\SsdpClient.cs" />
     <Compile Include="TransmissionMode.cs" />
     <Compile Include="Upnp\SatIpLocator.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Documents\GNU GENERAL PUBLIC LICENSE.txt" />

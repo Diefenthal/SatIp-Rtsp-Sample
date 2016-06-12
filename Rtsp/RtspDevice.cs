@@ -19,7 +19,6 @@ using System;
 using System.ComponentModel;
 using UPNPLib;
 
-
 namespace SatIp.RtspSample.Rtsp
 {
     public class RtspDevice : INotifyPropertyChanged, IDisposable
