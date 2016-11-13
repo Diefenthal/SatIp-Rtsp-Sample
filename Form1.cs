@@ -23,22 +23,23 @@ using SatIp.RtspSample.Properties;
 using SatIp.RtspSample.Rtsp;
 using SatIp.RtspSample.Upnp;
 using UPNPLib;
+using SatIp.RtspSample.Ssdp;
+using System.Reflection;
 
 namespace SatIp.RtspSample
 {
     public partial class Form1 : Form
     {
-        private DeviceCollector _deviceCollector =null;
+        private readonly SSDPClient _client = new SSDPClient();
         private RtspDevice _rtspDevice;
-        private Boolean _isstreaming;
-        private Timer _keepaLiveTimer;
+        private Boolean _isstreaming;       
 
         public Form1()
         {
             InitializeComponent();
             Logger.SetLogFilePath("Sample.log", Settings.Default.LogLevel);
             
-            var source = GetStationsFromLocalFile_m3u(Application.StartupPath + @"\PlayList.m3u");
+            var source = Utils.GetStationsFromLocalFile_m3u(Application.StartupPath + @"\PlayList.m3u");
             using (var enumerator = source.GetEnumerator())
             {
                 while (enumerator.MoveNext())
@@ -50,83 +51,74 @@ namespace SatIp.RtspSample
             tspgrQuality.Maximum = tspgrQuality.Maximum;
         }
 
-        void _keepaLiveTimer_Tick(object sender, EventArgs e)
+        
+        private void DeviceFound(object sender, SatIpDeviceFoundArgs args)
         {
-            try 
-            { 
-                _rtspDevice.RtspSession.Options();
-                int level;
-                int quality;
-                _rtspDevice.RtspSession.Describe(out level, out quality);
-                tspgrLevel.Value = level;
-                tspgrQuality.Value = quality;
-            }
-            catch (Exception exception)
+            if (InvokeRequired)
             {
-                Logger.Error(string.Format("{0}-{1}:{2}", "Form1", "_keepaLiveTimer_Tick", exception));
-            }           
-            
-        }
-        public void DeviceAdded(UPnPDevice device)
-        {
-            Logger.Info("Device with UUID :{0} found,and will added to the Devices Tree", device.UniqueDeviceName);
-            var newnode = treeView1.Nodes[0].Nodes.Add(device.UniqueDeviceName, device.FriendlyName);
-            newnode.ToolTipText = device.Description;
-            if (device.HasChildren)
-            {
-                var childdevices = device.Children;
-                foreach (UPnPDevice child in childdevices)
+                this.BeginInvoke((MethodInvoker)delegate
                 {
-                    newnode.Nodes.Add(child.UniqueDeviceName, child.FriendlyName).ToolTipText = child.Description;
-                }
+                    DeviceFound(sender, args);
+                });
+                return;
             }
-            if (treeView1.Nodes[0].IsExpanded != true)
-                treeView1.Nodes[0].Expand();
-        }
+            var newnode = Devices.Nodes[0].Nodes.Add(args.Device.UniqueDeviceName, args.Device.FriendlyName);
+            newnode.ToolTipText = args.Device.DeviceDescription;
+            if (Devices.Nodes[0].IsExpanded != true)
+                Devices.Nodes[0].Expand();
+            if (Devices.Nodes.Count > 0)
+            {
+                var tn = Devices.Nodes[0].LastNode;
+                Devices.SelectedNode = tn;
+                Devices.Select();                
+            }
 
-        private void SearchCompleted()
-        {
-            Logger.Info("Search Complete, but listen for any other Notify Messages");
-            if (treeView1.Nodes.Count > 0)
-            {
-                var tn = treeView1.Nodes[0].LastNode;
-                treeView1.SelectedNode = tn;
-                treeView1.Select();
-                
-                _keepaLiveTimer.Enabled = true;
-            }
-            else
-            {
-                Logger.Warn("No Sat>Ip server found  please check their connection and power states");
-            }
-        }
 
-        public void DeviceRemoved(string sUdn)
+        }
+        private void DeviceLost(object sender, SatIpDeviceLostArgs args)
         {
-            Logger.Info("Device with UUID :{0} restarts,and will removed from the Devices Tree",sUdn);
-            if(_rtspDevice.UniqueDeviceName.Equals(sUdn))
+            if (InvokeRequired)
             {
-                _keepaLiveTimer.Stop();
-                axWindowsMediaPlayer1.URL = "";                
-                _rtspDevice.Dispose();
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    DeviceLost(sender, args);
+                });
+                return;
             }
-            treeView1.Nodes["Node0"].Nodes[sUdn].Remove();
-            
+            Logger.Info("Device with UUID :{0} restarts,and will removed from the Devices Tree", args.Uuid);
+            if (Devices.Nodes[0].Nodes.ContainsKey(args.Uuid))
+            {
+                var tn = Devices.Nodes[0].Nodes[args.Uuid];
+                Devices.Nodes[0].Nodes.Remove(tn);
+                Devices.Update();
+            }
         }
         private void Form1_Load(object sender, EventArgs e)
         {
             Logger.Info("Search Started");
-            _deviceCollector = new DeviceCollector();
-            _deviceCollector.DeviceAdded += DeviceAdded;
-            _deviceCollector.DeviceRemoved += DeviceRemoved;
-            _deviceCollector.SearchCompleted += SearchCompleted;
+            _client.DeviceFound += DeviceFound;
+            _client.DeviceLost += DeviceLost;            
+            _client.FindByType("urn:ses-com:device:SatIPServer:1");
         }
-
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            try
+            {
+                _rtspDevice.Dispose();
+                _client.DeviceFound -= DeviceFound;
+                _client.DeviceLost -= DeviceLost;
+                _client.Dispose();
+            }
+            catch (Exception exception)
+            {
+                Logger.Error(string.Format("{0}-{1}:{2}", "Form1", "Form1_FormClosed", exception));
+            }
+        }
         private void PlayList_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
             {
-                var service = (Service)PlayList.SelectedItem;
+                var service = (M3uService)PlayList.SelectedItem;
                 Logger.Info("Selected Service is {0}", service.Name);
                 if (_rtspDevice != null) 
                 {                    
@@ -141,84 +133,30 @@ namespace SatIp.RtspSample
                 Logger.Error(string.Format("{0}-{1}:{2}", "Form1", "PlayList_SelectedIndexChanged", exception));
             }             
         }   
-
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        private void Devices_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            try 
-            { 
-                _rtspDevice.Dispose();
-            }
-            catch (Exception exception)
-            {
-                Logger.Error(string.Format("{0}-{1}:{2}", "Form1", "Form1_FormClosed", exception));
-            }            
-        }
-
-        public static List<Service> GetStationsFromLocalFile_m3u(string fileName)
-        {
-            using (StreamReader reader = File.OpenText(fileName))
-            {
-                string[] strArray = reader.ReadToEnd().Split(new[] { "\n", "\r", "\n\r", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-                var list = new List<Service>();
-                if (strArray[0].Trim().ToUpper() == "#EXTM3U")
-                {
-                    var name = string.Empty;
-                    var parameters = new string[15];
-                    for (int i = 0; i < strArray.Length; i++)
-                    {
-                        if (strArray[i].StartsWith("#EXTINF", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            var strArray2 = strArray[i].Split(new[] { ":", "," }, StringSplitOptions.None);
-                            if (strArray2.Length > 2)
-                            {
-                                name = strArray2[2];
-                                parameters = strArray[++i].Split('&');
-                            }
-                            list.Add(new Service(name, parameters));
-                        }
-                        else if (strArray[i].StartsWith("# ", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            name = strArray[i].Substring(2);
-                        }
-                    }
-                }
-                return list;
-            }
-        }
-
-      
-
-        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            var finder = new UPnPDeviceFinderClass();
-            var device = finder.FindByUDN(e.Node.Name);
-            if (device != null)
+            var device = (SatIpDevice)_client.FindByUDN(e.Node.Name);
+            if (device != null)            
             {
                 Logger.Info("Selected Sat>Ip Server is {0}", device.FriendlyName);
-                _keepaLiveTimer = new Timer { Enabled = true };
-                _keepaLiveTimer.Tick += _keepaLiveTimer_Tick;
+                
 
                 if ((_rtspDevice != null) && (!_rtspDevice.FriendlyName.Equals(device.FriendlyName)))
-                {
-                    //_keepaLiveTimer.Stop();
+                {                    
                     _rtspDevice.Dispose();
-                    _rtspDevice = new RtspDevice(device);
-                    _keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
-                    _keepaLiveTimer.Start();
+                    _rtspDevice = new RtspDevice(device.FriendlyName,device.BaseUrl.Host,device.UniqueDeviceName);                    
                     _isstreaming = false;
                 }
                 else
-                {
-                    //_keepaLiveTimer.Stop();
-                    _rtspDevice = new RtspDevice(device);
-                    _keepaLiveTimer.Interval = _rtspDevice.RtspSession.RtspSessionTimeToLive;
-                    _keepaLiveTimer.Start();
+                {                    
+                    _rtspDevice = new RtspDevice(device.FriendlyName, device.BaseUrl.Host, device.UniqueDeviceName);                    
                 }
-                var service = (Service)PlayList.SelectedItem;
+                var service = (M3uService)PlayList.SelectedItem;
                 Logger.Info("Selected Service is {0}", service.Name);
                 if (!_isstreaming)
                 {
                     _rtspDevice.RtspSession.Setup(service.ToString(), TransmissionMode.Unicast);
+                    _rtspDevice.RtspSession.RecieptionInfoChanged += new RecieptionInfoChangedEventHandler(RtspSession_RecieptionInfoChanged);
                     _rtspDevice.RtspSession.Play(String.Empty);
                     _isstreaming = true;
                     axWindowsMediaPlayer1.URL = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination,
@@ -226,7 +164,32 @@ namespace SatIp.RtspSample
                     Text = string.Format("rtp://{0}:{1}", _rtspDevice.RtspSession.Destination,
                         _rtspDevice.RtspSession.RtpPort);
                 }
+            }
+        }
+        
+        private void RtspSession_RecieptionInfoChanged(object sender, RecieptionInfoArgs e)
+        {
+            SetControlPropertyThreadSafe(tspgrLevel.ProgressBar, "Value", e.Level);
+            SetControlPropertyThreadSafe(tspgrQuality.ProgressBar, "Value", e.Quality);
+        }
 
+        delegate void SetControlPropertyThreadSafeDelegate(Control control, string propertyName, object propertyValue);
+        private static void SetControlPropertyThreadSafe(Control control, string propertyName, object propertyValue)
+        {
+            if (control.InvokeRequired)
+            {
+                control.Invoke(new SetControlPropertyThreadSafeDelegate
+                (SetControlPropertyThreadSafe),
+                new object[] { control, propertyName, propertyValue });
+            }
+            else
+            {
+                control.GetType().InvokeMember(
+                    propertyName,
+                    BindingFlags.SetProperty,
+                    null,
+                    control,
+                    new object[] { propertyValue });
             }
         }
     }

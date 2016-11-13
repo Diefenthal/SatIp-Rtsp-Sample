@@ -18,8 +18,12 @@ using System.Text;
 
 namespace SatIp.RtspSample.Rtcp
 {
-    class RtcpAppPacket : RtcpPacket
+    /// <summary>
+    /// The class that describes a RTCP App Packet
+    /// </summary>
+    public class RtcpAppPacket : RtcpPacket
     {
+        #region Properties
         /// <summary>
         /// Get the synchronization source.
         /// </summary>
@@ -35,8 +39,14 @@ namespace SatIp.RtspSample.Rtcp
         /// <summary>
         /// Get the variable data portion.
         /// </summary>
-        public string Data { get; private set; }
-
+        public string Data { get; private set; } 
+        #endregion
+        #region Public Protected Methods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
         public override void Parse(byte[] buffer, int offset)
         {
             base.Parse(buffer, offset);
@@ -60,9 +70,10 @@ namespace SatIp.RtspSample.Rtcp
             sb.AppendFormat("SynchronizationSource : {0} .\n", SynchronizationSource);
             sb.AppendFormat("Name : {0} .\n", Name);
             sb.AppendFormat("Identity : {0} .\n", Identity);
-            sb.AppendFormat("Data : {0} .\n", Data);            
+            sb.AppendFormat("Data : {0} .\n", Data);
             sb.AppendFormat(".\n");
             return sb.ToString();
-        }
+        } 
+        #endregion
     }
 }

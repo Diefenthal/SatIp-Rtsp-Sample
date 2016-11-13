@@ -33,7 +33,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.treeView1 = new System.Windows.Forms.TreeView();
+            this.Devices = new System.Windows.Forms.TreeView();
             this.PlayList = new System.Windows.Forms.ListBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tsslblLevel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -42,9 +42,11 @@
             this.tspgrQuality = new System.Windows.Forms.ToolStripProgressBar();
             this.axWindowsMediaPlayer1 = new AxWMPLib.AxWindowsMediaPlayer();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
@@ -79,7 +81,7 @@
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.treeView1);
+            this.splitContainer2.Panel1.Controls.Add(this.Devices);
             // 
             // splitContainer2.Panel2
             // 
@@ -89,17 +91,17 @@
             this.splitContainer2.SplitterDistance = 102;
             this.splitContainer2.TabIndex = 0;
             // 
-            // treeView1
+            // Devices
             // 
-            this.treeView1.Location = new System.Drawing.Point(3, 3);
-            this.treeView1.Name = "treeView1";
+            this.Devices.Location = new System.Drawing.Point(3, 3);
+            this.Devices.Name = "Devices";
             treeNode1.Name = "Node0";
             treeNode1.Text = "SatIp Server";
-            this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
+            this.Devices.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode1});
-            this.treeView1.Size = new System.Drawing.Size(367, 97);
-            this.treeView1.TabIndex = 0;
-            this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
+            this.Devices.Size = new System.Drawing.Size(367, 97);
+            this.Devices.TabIndex = 0;
+            this.Devices.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.Devices_AfterSelect);
             // 
             // PlayList
             // 
@@ -109,7 +111,7 @@
             this.PlayList.Location = new System.Drawing.Point(0, 0);
             this.PlayList.Margin = new System.Windows.Forms.Padding(0, 30, 0, 0);
             this.PlayList.Name = "PlayList";
-            this.PlayList.Size = new System.Drawing.Size(373, 433);
+            this.PlayList.Size = new System.Drawing.Size(373, 434);
             this.PlayList.TabIndex = 8;
             this.PlayList.SelectedIndexChanged += new System.EventHandler(this.PlayList_SelectedIndexChanged);
             // 
@@ -164,16 +166,19 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1122, 562);
             this.Controls.Add(this.splitContainer1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "Sat>Ip Rtsp Sample";
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
@@ -195,7 +200,7 @@
         private System.Windows.Forms.ToolStripStatusLabel tsslblLevel;
         private System.Windows.Forms.ListBox PlayList;
         private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.TreeView treeView1;
+        private System.Windows.Forms.TreeView Devices;
     }
 }
 

@@ -15,6 +15,7 @@
     along with SatIp.RtspSample.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -32,15 +33,23 @@ namespace SatIp.RtspSample.Rtp
         private TransmissionMode _transmissionMode;
         public RtpListener(String address, int port,TransmissionMode mode)
         {
+            if (address == null)
+            {
+                _address = Utils.GetLocalIPAddress();
+            }
+            else
+            {
+                _address = address;
+            }
             _transmissionMode = mode;
             switch (mode)
             {
                 case TransmissionMode.Unicast:
-                    _udpClient = new UdpClient(new IPEndPoint(IPAddress.Parse(address), port));
+                    _udpClient = new UdpClient(new IPEndPoint(IPAddress.Parse(_address), port));
                     _serverEndPoint = new IPEndPoint(IPAddress.Any, 0);
                     break;
                 case TransmissionMode.Multicast:                    
-                    _multicastEndPoint = new IPEndPoint(IPAddress.Parse(address), port);
+                    _multicastEndPoint = new IPEndPoint(IPAddress.Parse(_address), port);
                     _serverEndPoint = null;
                     _udpClient = new UdpClient();
                     _udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
@@ -138,6 +147,7 @@ namespace SatIp.RtspSample.Rtp
         }
         public delegate void PacketReceivedHandler(object sender, RtpPacketReceivedArgs e);
         public event PacketReceivedHandler PacketReceived;
+        private string _address;
         public class RtpPacketReceivedArgs : EventArgs
         {
             public RtpPacket Packet { get; private set; }

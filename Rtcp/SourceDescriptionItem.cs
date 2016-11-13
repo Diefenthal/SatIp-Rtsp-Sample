@@ -15,6 +15,7 @@
     along with SatIp.RtspSample.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.Text;
 namespace SatIp.RtspSample.Rtcp
 {
     /// <summary>
@@ -22,6 +23,7 @@ namespace SatIp.RtspSample.Rtcp
     /// </summary>
     public class SourceDescriptionItem
     {
+        #region Properties
         /// <summary>
         /// Get the type.
         /// </summary>
@@ -39,14 +41,14 @@ namespace SatIp.RtspSample.Rtcp
         /// <summary>
         /// Initialize a new instance of the SourceDescriptionItem class.
         /// </summary>
-        public SourceDescriptionItem() { }
-
+        public SourceDescriptionItem() { } 
+        #endregion
+        #region Public Methods
         /// <summary>
         /// Unpack the data in a packet.
         /// </summary>
         /// <param name="buffer">The buffer containing the packet.</param>
-        /// <param name="offset">The offset to the first byte of the packet within the buffer.</param>
-        /// <returns>An ErrorSpec instance if an error occurs; null otherwise.</returns>
+        /// <param name="offset">The offset to the first byte of the packet within the buffer.</param>        
         public void Process(byte[] buffer, int offset)
         {
             Type = buffer[offset];
@@ -54,7 +56,24 @@ namespace SatIp.RtspSample.Rtcp
             {
                 int length = buffer[offset + 1];
                 Text = Utils.ConvertBytesToString(buffer, offset + 2, length);
-            }            
-        }
+            }
+        } 
+        #endregion
+        #region Public overrides Methods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("Source Description Item.\n");
+            sb.AppendFormat("Type : {0} .\n", Type);
+            sb.AppendFormat("Text : {0} .\n", Text);
+            sb.AppendFormat("ItemLength : {0} .\n", ItemLength);
+            sb.AppendFormat(".\n");
+            return sb.ToString();
+        } 
+        #endregion
     }
 }

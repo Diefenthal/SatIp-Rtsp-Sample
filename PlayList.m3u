@@ -1,6 +1,5 @@
 #EXTM3U
-#EXTINF:-1,Al_Jazeera_English
-src=1&freq=11508&sr=22000&pol=v&msys=dvbs&fec=45&mtype=qpsk&pids=0,762,712,732,16,17,18
+
 #EXTINF:-1,Russia_Today
 src=1&freq=11538&sr=22000&pol=v&msys=dvbs&fec=45&mtype=qpsk&pids=0,654,604,624,16,17,18
 #EXTINF:-1,France_24_in_English

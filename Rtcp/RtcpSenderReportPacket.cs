@@ -19,6 +19,9 @@ using System.Text;
 
 namespace SatIp.RtspSample.Rtcp
 {
+    /// <summary>
+    /// The class that describes a RTCP Sender Report Packet.
+    /// </summary>
     public class RtcpSenderReportPacket : RtcpPacket
     {
         #region Properties
@@ -51,7 +54,12 @@ namespace SatIp.RtspSample.Rtcp
         /// </summary>
         public byte[] ProfileExtension { get; private set; } 
         #endregion
-
+        #region Public override Methods
+        /// <summary>
+        /// Unpack the data in a packet.
+        /// </summary>
+        /// <param name="buffer">The buffer containing the packet.</param>
+        /// <param name="offset">The offset to the first byte of the packet within the buffer.</param>
         public override void Parse(byte[] buffer, int offset)
         {
             base.Parse(buffer, offset);
@@ -67,7 +75,7 @@ namespace SatIp.RtspSample.Rtcp
             while (ReportBlocks.Count < ReportCount)
             {
                 ReportBlock reportBlock = new ReportBlock();
-                reportBlock.Process(buffer, offset + index);                
+                reportBlock.Process(buffer, offset + index);
                 ReportBlocks.Add(reportBlock);
                 index += reportBlock.BlockLength;
             }
@@ -83,7 +91,10 @@ namespace SatIp.RtspSample.Rtcp
                 }
             }
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -97,9 +108,14 @@ namespace SatIp.RtspSample.Rtcp
             sb.AppendFormat("NTP Timestamp : {0} .\n", Utils.NptTimestampToDateTime(NPTTimeStamp));
             sb.AppendFormat("RTP Timestamp : {0} .\n", RTPTimeStamp);
             sb.AppendFormat("Sender PacketCount : {0} .\n", SenderPacketCount);
-            sb.AppendFormat("Sender Octet Count : {0} .\n", SenderOctetCount);            
+            sb.AppendFormat("Sender Octet Count : {0} .\n", SenderOctetCount);
+            foreach (var reportblock in ReportBlocks)
+            {
+                reportblock.ToString();
+            }
             sb.AppendFormat(".\n");
             return sb.ToString();
         }
+        #endregion        
     }
 }

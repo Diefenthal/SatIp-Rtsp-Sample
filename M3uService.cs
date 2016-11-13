@@ -19,9 +19,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System;
 
-
-
-public class Service : INotifyPropertyChanged
+public class M3uService : INotifyPropertyChanged
 {
     #region Private Fields
 
@@ -51,10 +49,17 @@ public class Service : INotifyPropertyChanged
     #endregion
 
     #region Constructor
-
-    public Service()
+    /// <summary>
+    /// 
+    /// </summary>
+    public M3uService()
     { }
-    public Service(string name, IEnumerable<string> parameters)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="parameters"></param>
+    public M3uService(string name, IEnumerable<string> parameters)
     {
         _name = name;
         foreach (var parameter in parameters)
@@ -150,8 +155,6 @@ public class Service : INotifyPropertyChanged
                 _plp = plp[1];
             }
         }
-
-
     }
 
     #endregion
@@ -349,7 +352,7 @@ public class Service : INotifyPropertyChanged
                 value = string.Format("src={0}&freq={1}&pol={2}&msys={3}&sr={4}&fec={5}&mtype={6}&ro={7}&plts={8}&pids={9}", _source, _frequency, _polarity, _modulationSystem, _symbolRate, _fecrate, _modulationType, _rollOff, _pilotTones, _pids);
                 break;
             case "dvbt":
-                value = string.Format("freq={0}&bw={1}&msys={2}&tmode={3}&mtype={4}&gi={5}&fec={6}&pids={7}", _frequency, _bandwidth, _modulationSystem, _transmissionMode, _modulationType, _guardInterval, _fecrate, _pids);
+                value = string.Format("freq={0}&bw={1}&msys={2}&mtype={3}&pids={4}", _frequency, _bandwidth, _modulationSystem,  _modulationType,  _pids);
                 break;
             case "dvbt2":
                 value = string.Format("freq={0}&bw={1}&msys={2}&tmode={3}&mtype={4}&gi={5}&fec={6}&plp{7}&t2id{8}&sm{9}&pids={10}", _frequency, _bandwidth, _modulationSystem, _transmissionMode, _modulationType, _guardInterval, _fecrate, _t2id, _sm, _pids);

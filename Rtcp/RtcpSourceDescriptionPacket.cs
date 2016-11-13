@@ -19,11 +19,23 @@ using System.Text;
 
 namespace SatIp.RtspSample.Rtcp
 {
-    class RtcpSourceDescriptionPacket :RtcpPacket
-    { /// <summary>
+    /// <summary>
+    /// The class that describes a Rtcp Source Description Packet
+    /// </summary>
+    public class RtcpSourceDescriptionPacket :RtcpPacket
+    {
+        #region Properties
+        /// <summary>
         /// Get the list of source descriptions.
         /// </summary>
-        public Collection<SourceDescriptionBlock> Descriptions;
+        public Collection<SourceDescriptionBlock> Descriptions; 
+        #endregion
+        #region Public override Methods
+        /// <summary>
+        /// Unpack the data in a packet.
+        /// </summary>
+        /// <param name="buffer">The buffer containing the packet.</param>
+        /// <param name="offset">The offset to the first byte of the packet within the buffer.</param>
         public override void Parse(byte[] buffer, int offset)
         {
             base.Parse(buffer, offset);
@@ -39,6 +51,10 @@ namespace SatIp.RtspSample.Rtcp
                 index += descriptionBlock.BlockLength;
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -48,10 +64,13 @@ namespace SatIp.RtspSample.Rtcp
             sb.AppendFormat("Report Count : {0} .\n", ReportCount);
             sb.AppendFormat("PacketType: {0} .\n", Type);
             sb.AppendFormat("Length : {0} .\n", Length);            
-            sb.AppendFormat("Descriptions : {0} .\n", Descriptions);
-            
+            foreach (var description in Descriptions)
+            {
+                description.ToString();
+            }
             sb.AppendFormat(".\n");
             return sb.ToString();
         }
+        #endregion        
     }
 }

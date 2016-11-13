@@ -18,11 +18,45 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
 
 namespace SatIp.RtspSample
 {
     public class Utils
     {
+        public static List<M3uService> GetStationsFromLocalFile_m3u(string fileName)
+        {
+            using (StreamReader reader = File.OpenText(fileName))
+            {
+                string[] strArray = reader.ReadToEnd().Split(new[] { "\n", "\r", "\n\r", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                var list = new List<M3uService>();
+                if (strArray[0].Trim().ToUpper() == "#EXTM3U")
+                {
+                    var name = string.Empty;
+                    var parameters = new string[15];
+                    for (int i = 0; i < strArray.Length; i++)
+                    {
+                        if (strArray[i].StartsWith("#EXTINF", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            var strArray2 = strArray[i].Split(new[] { ":", "," }, StringSplitOptions.None);
+                            if (strArray2.Length > 2)
+                            {
+                                name = strArray2[2];
+                                parameters = strArray[++i].Split('&');
+                            }
+                            list.Add(new M3uService(name, parameters));
+                        }
+                        else if (strArray[i].StartsWith("# ", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            name = strArray[i].Substring(2);
+                        }
+                    }
+                }
+                return list;
+            }
+        }
         public static int Convert2BytesToInt(byte[] buffer, int offset)
         {
             int temp = (int)buffer[offset];
@@ -73,7 +107,6 @@ namespace SatIp.RtspSample
             return (reply.ToString());
         }
         public static DateTime NptTimestampToDateTime(long nptTimestamp) { return NptTimestampToDateTime((uint)((nptTimestamp >> 32) & 0xFFFFFFFF), (uint)(nptTimestamp & 0xFFFFFFFF),null); }
-
         public static DateTime NptTimestampToDateTime(uint seconds, uint fractions, DateTime? epoch )
         {
             ulong ticks =(ulong)((seconds * TimeSpan.TicksPerSecond) + ((fractions * TimeSpan.TicksPerSecond) / 0x100000000L));
@@ -87,6 +120,43 @@ namespace SatIp.RtspSample
         public static DateTime UtcEpoch1900 = new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public static DateTime UtcEpoch1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
+        public static Dictionary<string, string> ProcessSsdpResponse(string searchResponse)
+        {
+            var reader = new StringReader(searchResponse);
+            var line = string.Empty;
+            var values = new Dictionary<string, string>();
+            while ((line = reader.ReadLine()) != null)
+            {
+                if (line == "")
+                {
+                    continue;
+                }
+                var colon = line.IndexOf(':');
+                if (colon < 1)
+                {
+                    return null;
+                }
+                var name = line.Substring(0, colon).Trim();
+                var value = line.Substring(colon + 1).Trim();
+                if (string.IsNullOrEmpty(name))
+                {
+                    return null;
+                }
+                values[name.ToLowerInvariant()] = value;
+            }
+            return values;
+        }
+        public static string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            throw new Exception("Local IP Address Not Found!");
+        }
     }
 }

@@ -19,11 +19,31 @@ using System.Text;
 
 namespace SatIp.RtspSample.Rtcp
 {
+    /// <summary>
+    /// The class that describes a Rtcp Receiver Report Packet
+    /// </summary>
     public class RtcpReceiverReportPacket :RtcpPacket
     {
+        #region Properties
+        /// <summary>
+        /// 
+        /// </summary>
         public string SynchronizationSource { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public Collection<ReportBlock> ReportBlocks { get; private set; }
-        public byte[] ProfileExtension { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public byte[] ProfileExtension { get; private set; } 
+        #endregion
+        #region Public override Methods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
         public override void Parse(byte[] buffer, int offset)
         {
             base.Parse(buffer, offset);
@@ -51,6 +71,10 @@ namespace SatIp.RtspSample.Rtcp
                 }
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -60,9 +84,14 @@ namespace SatIp.RtspSample.Rtcp
             sb.AppendFormat("Report Count : {0} .\n", ReportCount);
             sb.AppendFormat("PacketType: {0} .\n", Type);
             sb.AppendFormat("Length : {0} .\n", Length);
-            sb.AppendFormat("SynchronizationSource : {0} .\n", SynchronizationSource);            
+            sb.AppendFormat("SynchronizationSource : {0} .\n", SynchronizationSource);
+            foreach (var reportblock in ReportBlocks)
+            {
+                reportblock.ToString();
+            }
             sb.AppendFormat(".\n");
             return sb.ToString();
-        }
+        } 
+        #endregion
     }
 }

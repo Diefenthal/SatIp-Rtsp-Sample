@@ -19,10 +19,27 @@ using System.Text;
 
 namespace SatIp.RtspSample.Rtcp
 {
+    /// <summary>
+    /// The class that describes a RTCP Bye Packet
+    /// </summary>
     public class RtcpByePacket :RtcpPacket
     {
+        #region Properties
+        /// <summary>
+        /// 
+        /// </summary>
         public Collection<string> SynchronizationSources { get; private set; }
-        public string ReasonForLeaving { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ReasonForLeaving { get; private set; } 
+        #endregion
+        #region Public Protected Methods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
         public override void Parse(byte[] buffer, int offset)
         {
             base.Parse(buffer, offset);
@@ -41,6 +58,10 @@ namespace SatIp.RtspSample.Rtcp
                 ReasonForLeaving = Utils.ConvertBytesToString(buffer, offset + index + 1, reasonLength);
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -51,9 +72,10 @@ namespace SatIp.RtspSample.Rtcp
             sb.AppendFormat("PacketType: {0} .\n", Type);
             sb.AppendFormat("Length : {0} .\n", Length);
             sb.AppendFormat("SynchronizationSources : {0} .\n", SynchronizationSources);
-            sb.AppendFormat("ReasonForLeaving : {0} .\n", ReasonForLeaving);            
+            sb.AppendFormat("ReasonForLeaving : {0} .\n", ReasonForLeaving);
             sb.AppendFormat(".\n");
             return sb.ToString();
-        }
+        } 
+        #endregion
     }
 }
