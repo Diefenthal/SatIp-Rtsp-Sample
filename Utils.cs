@@ -1,5 +1,5 @@
 ﻿/*  
-    Copyright (C) <2007-2016>  <Kay Diefenthal>
+    Copyright (C) <2007-2017>  <Kay Diefenthal>
 
     SatIp.RtspSample is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
 */
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO;
 using System.Net;
@@ -120,6 +119,11 @@ namespace SatIp.RtspSample
         public static DateTime UtcEpoch1900 = new DateTime(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public static DateTime UtcEpoch1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        /// <summary>
+        /// Split SSDP Response in a Key Value Dictonary  
+        /// </summary>
+        /// <param name="searchResponse"></param>
+        /// <returns></returns>
         public static Dictionary<string, string> ProcessSsdpResponse(string searchResponse)
         {
             var reader = new StringReader(searchResponse);

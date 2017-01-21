@@ -1,5 +1,5 @@
 ﻿/*  
-    Copyright (C) <2007-2016>  <Kay Diefenthal>
+    Copyright (C) <2007-2017>  <Kay Diefenthal>
 
     SatIp.DiscoverySample is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,10 +17,8 @@
 
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
-
 using SatIp.RtspSample.Logging;
 
 namespace SatIp.RtspSample.Ssdp
@@ -48,7 +46,6 @@ namespace SatIp.RtspSample.Ssdp
         private bool _supportsDVBS;
         private bool _supportsDVBT; 
         #endregion
-
         #region Constructor
         /// <summary>
         /// Default constructor.
@@ -64,7 +61,6 @@ namespace SatIp.RtspSample.Ssdp
             Init(new Uri(url));
         } 
         #endregion
-
         #region Method
 
         public string GetImage(int index)
@@ -234,7 +230,6 @@ namespace SatIp.RtspSample.Ssdp
 
         }
         #endregion
-
         #region Proeprties implementation
 
         /// <summary>
@@ -369,8 +364,7 @@ namespace SatIp.RtspSample.Ssdp
             set { _supportsDVBT = value; }
         }
 
-        #endregion
-        
+        #endregion        
     }
     public class SatIpDeviceIcon
     {

@@ -1,5 +1,5 @@
 ﻿/*  
-    Copyright (C) <2007-2016>  <Kay Diefenthal>
+    Copyright (C) <2007-2017>  <Kay Diefenthal>
 
     SatIp.RtspSample is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,14 +15,10 @@
     along with SatIp.RtspSample.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Windows.Forms;
 using SatIp.RtspSample.Logging;
 using SatIp.RtspSample.Properties;
 using SatIp.RtspSample.Rtsp;
-using SatIp.RtspSample.Upnp;
-using UPNPLib;
 using SatIp.RtspSample.Ssdp;
 using System.Reflection;
 
@@ -72,8 +68,6 @@ namespace SatIp.RtspSample
                 Devices.SelectedNode = tn;
                 Devices.Select();                
             }
-
-
         }
         private void DeviceLost(object sender, SatIpDeviceLostArgs args)
         {
@@ -191,6 +185,6 @@ namespace SatIp.RtspSample
                     control,
                     new object[] { propertyValue });
             }
-        }
+        }        
     }
 }
