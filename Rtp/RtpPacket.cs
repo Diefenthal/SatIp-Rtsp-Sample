@@ -49,11 +49,9 @@ namespace SatIp.RtspSample.Rtp
             packet.Version = buffer[0] >> 6;
             packet.Padding = (buffer[0] & 0x20) != 0;
             packet.Extension = (buffer[0] & 0x10) != 0;
-            packet.ContributingSourceCount = buffer[0] & 0x0f;
-
+            //packet.ContributingSourceCount = buffer[0] & 0x0f;
             packet.Marker = (buffer[1] & 0x80) != 0;
             packet.PayloadType = buffer[1] & 0x7f;
-
             packet.SequenceNumber = Utils.Convert2BytesToInt(buffer, 2);
             packet.TimeStamp = Utils.Convert4BytesToLong(buffer, 4);
             packet.SynchronizationSource = Utils.Convert4BytesToLong(buffer, 8);
@@ -94,24 +92,6 @@ namespace SatIp.RtspSample.Rtp
             return packet;
         }
 
-        /// <summary>
-        /// GetValueFromByte
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="startPos"></param>
-        /// <param name="length"></param>
-        /// <returns></returns>
-        private static Int32 ValueFromByte(Byte value, int startPos, int length)
-        {
-            Byte mask = 0;
-            for (int i = 0; i < length; i++)
-            {
-                mask = (Byte)(mask | 0x1 << startPos + i);
-            }
-            Byte result = (Byte)((value & mask) >> startPos);
-            return Convert.ToInt32(result);
-        }
-
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -128,7 +108,5 @@ namespace SatIp.RtspSample.Rtp
             sb.AppendFormat("\n");
             return sb.ToString();
         }
-
     }
-
 }

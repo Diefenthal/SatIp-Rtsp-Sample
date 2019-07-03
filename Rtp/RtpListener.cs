@@ -30,6 +30,7 @@ namespace SatIp.RtspSample.Rtp
         private IPEndPoint _multicastEndPoint;
         private IPEndPoint _serverEndPoint;
         private TransmissionMode _transmissionMode;
+        private string _address;
         public RtpListener(String address, int port,TransmissionMode mode)
         {
             if (address == null)
@@ -146,7 +147,7 @@ namespace SatIp.RtspSample.Rtp
         }
         public delegate void PacketReceivedHandler(object sender, RtpPacketReceivedArgs e);
         public event PacketReceivedHandler PacketReceived;
-        private string _address;
+        
         public class RtpPacketReceivedArgs : EventArgs
         {
             public RtpPacket Packet { get; private set; }
