@@ -153,6 +153,11 @@ public class M3uService : INotifyPropertyChanged
                 var plp = parameter.Split('=');
                 _plp = plp[1];
             }
+            if (parameter.Substring(0).Contains("bw="))
+            {
+                var bandwidth = parameter.Split('=');
+                _bandwidth = bandwidth[1];
+            }
         }
     }
 
@@ -351,12 +356,12 @@ public class M3uService : INotifyPropertyChanged
                 value = string.Format("src={0}&freq={1}&pol={2}&msys={3}&sr={4}&fec={5}&mtype={6}&ro={7}&plts={8}&pids={9}", _source, _frequency, _polarity, _modulationSystem, _symbolRate, _fecrate, _modulationType, _rollOff, _pilotTones, _pids);
                 break;
             case "dvbt":
-                value = string.Format("freq={0}&bw={1}&msys={2}&mtype={3}&pids={4}", _frequency, _bandwidth, _modulationSystem,  _modulationType,  _pids);
+                value = string.Format("freq={0}&bw={1}&msys={2}&pids={3}", _frequency, _bandwidth, _modulationSystem,    _pids);
                 break;
             case "dvbt2":
-                value = string.Format("freq={0}&bw={1}&msys={2}&tmode={3}&mtype={4}&gi={5}&fec={6}&plp{7}&t2id{8}&sm{9}&pids={10}", _frequency, _bandwidth, _modulationSystem, _transmissionMode, _modulationType, _guardInterval, _fecrate, _t2id, _sm, _pids);
-                //value = string.Format("freq={0}&bw={1}&msys={2}&tmode={3}&mtype={4}&gi={5}&fec={6}&plp={7}&t2id={8}&sm={9}&pids={10}", _frequency, _bandwidth, _modulationSystem, _transmissionMode, _modulationType, _guardInterval, _fecrate, 0, 0, 0, _pids);
-                break;
+                value = string.Format("freq={0}&bw={1}&msys={2}&tmode={3}&mtype={4}&gi={5}&fec={6}&pids={7}", _frequency, _bandwidth, _modulationSystem, _transmissionMode, _modulationType, _guardInterval, _fecrate, _pids);
+                //    //value = string.Format("freq={0}&bw={1}&msys={2}&tmode={3}&mtype={4}&gi={5}&fec={6}&plp={7}&t2id={8}&sm={9}&pids={10}", _frequency, _bandwidth, _modulationSystem, _transmissionMode, _modulationType, _guardInterval, _fecrate, 0, 0, 0, _pids);
+                    break;
         }
         return value;
     }
