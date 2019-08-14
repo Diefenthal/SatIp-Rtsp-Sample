@@ -24,6 +24,7 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading;
 using SatIp.RtspSample.Logging;
+using SatIp.RtspSample.Rtp;
 using SatIp.RtspSample.Rtcp;
 
 
@@ -91,7 +92,8 @@ namespace SatIp.RtspSample.Rtsp
         private int _rtspSequenceNum = 1;
         private bool _disposed = false;
         private RtcpListener _rtcpListener;
-       
+        private RtpListener _rtpListener;
+
         #endregion
 
         #region Constructor
@@ -517,6 +519,9 @@ namespace SatIp.RtspSample.Rtsp
                 ProcessTransportHeader(transportHeader);
 
                 StartKeepAliveThread();
+                _rtpListener = new RtpListener(Destination, RtpPort, transmissionmode);                
+                _rtpListener.StartRtpListenerThread();
+
                 _rtcpListener = new RtcpListener(Destination, RtcpPort, transmissionmode);
                 _rtcpListener.PacketReceived += new RtcpListener.PacketReceivedHandler(RtcpPacketReceived);
                 _rtcpListener.StartRtcpListenerThread();
@@ -646,6 +651,11 @@ namespace SatIp.RtspSample.Rtsp
             SendRequest(request);
             ReceiveResponse(out response);
 
+            if (_rtpListener != null)
+            {
+                _rtpListener.Dispose();                
+                _rtpListener = null;
+            }
             if (_rtcpListener != null)
             {
                 _rtcpListener.Dispose();          

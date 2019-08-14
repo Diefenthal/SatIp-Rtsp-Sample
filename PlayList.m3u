@@ -1,6 +1,6 @@
 #EXTM3U
 #EXTINF:-1,DVBT
-?freq=586&bw=8&msys=dvbt2&tmode=16k&mtype=64qam&gi=19128&fec=12&pids=all
+?freq=514&bw=8&msys=dvbt2&tmode=16k&mtype=64qam&gi=19128&fec=35&pids=0,1,140,150,160,130,110,120,180,3100,3101,3102,3103,3088,3089,3090,3091,3092,3093,3094,3095,3096,3097,3098,16,17,18,20
 #EXTINF:-1,Russia_Today
 src=1&freq=11538&sr=22000&pol=v&msys=dvbs&fec=45&mtype=qpsk&pids=0,654,604,624,16,17,18
 #EXTINF:-1,France_24_in_English

@@ -15,6 +15,7 @@
     along with SatIp.RtspSample.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -22,7 +23,7 @@ using SatIp.RtspSample.Logging;
 
 namespace SatIp.RtspSample.Rtp
 {
-    public class RtpListener
+    public class RtpListener : IDisposable
     {
         private AutoResetEvent _rtpListenerThreadStopEvent;
         private Thread _rtpListenerThread;
@@ -30,9 +31,11 @@ namespace SatIp.RtspSample.Rtp
         private IPEndPoint _multicastEndPoint;
         private IPEndPoint _serverEndPoint;
         private TransmissionMode _transmissionMode;
-        private string _address;
+        private string _address;        
+        private bool _disposed;
+
         public RtpListener(String address, int port,TransmissionMode mode)
-        {
+        {                        
             if (address == null)
             {
                 _address = Utils.GetLocalIPAddress();
@@ -57,8 +60,12 @@ namespace SatIp.RtspSample.Rtp
                     _udpClient.Client.Bind(new IPEndPoint(IPAddress.Any, _multicastEndPoint.Port));
                     _udpClient.JoinMulticastGroup(_multicastEndPoint.Address);
                     break;
-            }            
-            //StartRtpListenerThread();
+            }          
+        }
+
+        ~RtpListener()
+        {
+            Dispose(false);
         }
         public void StartRtpListenerThread()
         {
@@ -114,11 +121,14 @@ namespace SatIp.RtspSample.Rtp
                 try
                 {                   
                     
-                    while (!_rtpListenerThreadStopEvent.WaitOne(1))
+                    while (!_rtpListenerThreadStopEvent.WaitOne(1)||(_stream.Length.Equals(52428800)))
                     {
                         byte[] receivedbytes = _udpClient.Receive(ref _serverEndPoint);
-                        RtpPacket packet = RtpPacket.Decode(receivedbytes);
-                        OnPacketReceived(new RtpPacketReceivedArgs(packet));
+                        if(receivedbytes != null)
+                        {
+                            RtpPacket packet = RtpPacket.Decode(receivedbytes);
+                            OnPacketReceived(new RtpPacketReceivedArgs(packet));
+                        }
                     }
                 }
                 finally
@@ -145,6 +155,28 @@ namespace SatIp.RtspSample.Rtp
             }
             Logger.Warn("SAT>IP : RTP listener thread stopping");
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    StopRtpListenerThread();
+                }
+            }
+            _disposed = true;
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         public delegate void PacketReceivedHandler(object sender, RtpPacketReceivedArgs e);
         public event PacketReceivedHandler PacketReceived;
         
